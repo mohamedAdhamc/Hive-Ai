@@ -18,3 +18,6 @@ class Location:
 
     def get_y(self):
         return self.y
+    
+    def __repr__(self):
+        return f"location x:{self.x}, y:{self.y}"
