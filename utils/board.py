@@ -1,6 +1,6 @@
 from location import Location
 from game_object import GameObject
-from grass_hopper import Grasshopper
+# from grass_hopper import Grasshopper
 
 class Board:
     def __init__(self):
@@ -50,4 +50,39 @@ class Board:
         Represent the board as a string.
         """
         return "\n".join([f"Position {pos}: {obj}" for pos, obj in self._objects.items()])
+    
+    def checkIfvalid(self, oldLoc: Location, newLoc: Location):
+        newBoard = dict(self._objects)
+        del newBoard[(oldLoc)]
+        newBoard[newLoc] = 1
+        print("Qabl el mas7 Board:=>",newBoard)
+        visited = []
+        
+        # test neighbours
+        def checkHive(loc: Location, prev:Location):
+            visited.append(loc)
+            print("location:",loc)
+            curr_x = loc.get_x()
+            curr_y = loc.get_y()
+            d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
+            for (dx,dy) in d:
+                current_search_loc = Location(curr_x + dx, curr_y + dy)
+                if((curr_x + dx, curr_y + dy) == (prev.get_x(), prev.get_y()) or current_search_loc in visited):
+                    continue
+                print("search:",current_search_loc)
+                if newBoard.get((current_search_loc),None) is not None:
+                    print("found")
+                    checkHive(current_search_loc, loc)
+                else:
+                    print("not found")
+            
+            del newBoard[(loc)]
+                    
+
+        checkHive(newLoc,oldLoc)
+        print("ba3d el mas7 board:",newBoard)
+        if(len(newBoard) == 0):
+            return True
+        else:
+            return False
 

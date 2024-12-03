@@ -21,3 +21,10 @@ class Location:
     
     def __repr__(self):
         return f"location x:{self.x}, y:{self.y}"
+    
+    def __hash__(self):
+        return hash((self.x, self.y))
+
+    def __eq__(self, other):
+        if isinstance(other, Location):
+            return self.x == other.get_x() and self.y == other.get_y()
