@@ -30,9 +30,11 @@ class Queen(GameObject):
             if(board.get_object(newLoc) is None):
                 # check if game is not ruined (Check if the hive is still connected)
                 if(board.checkIfvalid(loc, newLoc)):
-                    possible_moves.append(newLoc)
+                    if(not board.isSurroundedByFive(newLoc)):
+                        possible_moves.append(newLoc)
                     
         print("Possible Moves", possible_moves)
+        return possible_moves
         
         # # right
         # newLoc = Location(x+2,y)

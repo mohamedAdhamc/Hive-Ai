@@ -65,13 +65,15 @@ class Spider(GameObject):
                 result = moveStepForward(newLoc, initial_loc, 3)
             
         
-        for move in moves:
+        for newLoc in moves:
             print("initialLoc:",initial_loc)
-            print("move:",move)
-            if(board.checkIfvalid(initial_loc, move)):
-                possible_moves.append(move)
+            print("move:",newLoc)
+            if(board.checkIfvalid(initial_loc, newLoc)):
+                if(not board.isSurroundedByFive(newLoc)):
+                    possible_moves.append(newLoc)
                 
         print("possible moves:", possible_moves)
+        return possible_moves
         
                 
         

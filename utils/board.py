@@ -52,6 +52,14 @@ class Board:
         return "\n".join([f"Position {pos}: {obj}" for pos, obj in self._objects.items()])
     
     def checkIfvalid(self, oldLoc: Location, newLoc: Location):
+        """
+        Checks if the hive is still connected after every move.
+        Args:
+            oldLoc (Location): Location of object before the move.
+            newLoc (Location): Location of object after the move.
+        Returns:
+            bool: True if the hive is still connected, False otherwise.
+        """
         newBoard = dict(self._objects)
         del newBoard[(oldLoc)]
         newBoard[newLoc] = 1
@@ -85,4 +93,29 @@ class Board:
             return True
         else:
             return False
+        
+    
+    def isSurroundedByFive(self,loc: Location):
+        """
+        Checks whether the object is surrounded by five other objects or no
+        Args:
+            loc (Location): The location of the object.
+
+        Returns:
+            bool: True if the object is surrounded by five, false otherwise.
+        """
+        curr_x = loc.get_x()
+        curr_y = loc.get_y()
+        counter = 0
+        d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
+        for (dx,dy) in d:
+            current_search_loc = Location(curr_x + dx, curr_y + dy)
+            if self._objects.get((current_search_loc),None) is not None:
+                counter = counter + 1
+        
+        if(counter == 5):
+            return True
+        else:
+            return False
+                
 
