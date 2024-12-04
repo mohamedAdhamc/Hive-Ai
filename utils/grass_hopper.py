@@ -7,6 +7,7 @@ class Grasshopper(GameObject):
 
         super().__init__(location, team)  # Call the parent class constructor
 
+
         if not isinstance(location, Location):
             raise ValueError("location must be an instance of the Location class.")
         
@@ -15,7 +16,7 @@ class Grasshopper(GameObject):
     # def __repr__(self):
     #     return f"Grasshopper at {self.get_location()}"
     
-    def get_next_possible_locations(self, board:Board):
+    def get_next_possible_locations(self, board: Board):
         newLocations = []
         possible_moves = []
 
@@ -34,57 +35,3 @@ class Grasshopper(GameObject):
                     
         return possible_moves
         
-        # #if there is an element above and right
-        # if (Board.get_object(Location(x+1, y+1)) is not None):
-        #     new_x = x
-        #     new_y = y
-        #     while (Board.get_object(Location(x+1, y+1)) is not None):
-        #         new_x += 1
-        #         new_y += 1
-        #     newLocations.append(Location(new_x,new_y))
-            
-
-        # #if there is an element above and left
-        # if (Board.get_object(Location(x-1, y+1)) is not None):
-        #     new_x = x
-        #     new_y = y
-        #     while (Board.get_object(Location(x-1, y+1)) is not None):
-        #         new_x -= 1
-        #         new_y += 1
-        #     newLocations.append(Location(new_x,new_y))
-
-        # #if there is an element bottom and right
-        # if (Board.get_object(Location(x+1, y-1)) is not None):
-        #     new_x = x
-        #     new_y = y
-        #     while (Board.get_object(Location(x+1, y-1)) is not None):
-        #         new_x += 1
-        #         new_y -= 1
-        #     newLocations.append(Location(new_x, new_y))
-
-        # #if there is an element bottom and left
-        # if (Board.get_object(Location(x-1, y-1)) is not None):
-        #     new_x = x
-        #     new_y = y
-        #     while (Board.get_object(Location(x-1, y-1)) is not None):
-        #         new_x -= 1
-        #         new_y -= 1
-        #     newLocations.append(Location(new_x, new_y))
-
-        # #if there is an element to the right
-        # if (Board.get_object(Location(x+2, y)) is not None):
-        #     new_x = x + 2
-        #     new_y = y
-        #     while (Board.get_object(Location(x-1, y-1)) is not None):
-        #         new_x += 2
-        #     newLocations.append(Location(new_x, new_y))
-
-        # #if there is an element to the left
-        # if (Board.get_object(Location(x-2, y)) is not None):
-        #     new_x = x - 2
-        #     new_y = y
-        #     while (Board.get_object(Location(x-1, y-1)) is not None):
-        #         new_x -= 2
-        #     newLocations.append(Location(new_x, new_y))
-
-        return newLocations

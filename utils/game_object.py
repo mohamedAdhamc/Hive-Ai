@@ -7,6 +7,7 @@ class GameObject:
         self._location = location
         self._team = team
 
+
     def get_location(self):
         return self._location
 
@@ -27,5 +28,8 @@ class GameObject:
     def __repr__(self):
         return f"{self.__class__.__name__} at {self.get_location()}, in team {self._team}"
     
-        
+
+    def get_next_possible_locations(self, board):
+        raise NotImplementedError
+
 

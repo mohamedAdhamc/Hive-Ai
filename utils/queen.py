@@ -36,61 +36,6 @@ class Queen(GameObject):
         print("Possible Moves", possible_moves)
         return possible_moves
         
-        # # right
-        # newLoc = Location(x+2,y)
-        # if(board.get_object(newLoc) is None):
-        #     # check if game is not ruined (Check if the hive is still connected)
-        #     board.checkIfvalid(newLoc)
-            
-        # # left
-        # newLoc = Location(x-2,y)
-        # if(board.get_object(newLoc) is None):
-        #     # check if game is not ruined (Check if the hive is still connected)
-        #     newBoard: Board = board
-        #     newBoard.remove_object(loc)
-        #     newBoard.add_object(newLoc)
-        #     # newBoard.checkIfValid() 
-        #     possible_moves.append(newLoc)
-            
-        # # upper right
-        # newLoc = Location(x+1,y+1)
-        # if(board.get_object(newLoc) is None):
-        #     # check if game is not ruined (Check if the hive is still connected)
-        #     newBoard: Board = board
-        #     newBoard.remove_object(loc)
-        #     newBoard.add_object(newLoc)
-        #     # newBoard.checkIfValid() 
-        #     possible_moves.append(newLoc) # if valid
-            
-        # # upper left
-        # newLoc = Location(x-1,y+1)
-        # if(board.get_object(newLoc) is None):
-        #     # check if game is not ruined (Check if the hive is still connected)
-        #     newBoard: Board = board
-        #     newBoard.remove_object(loc)
-        #     newBoard.add_object(newLoc)
-        #     # newBoard.checkIfValid() 
-        #     possible_moves.append(newLoc)
-            
-        # # lower right
-        # newLoc = Location(x+1,y-1)
-        # if(board.get_object(newLoc) is None):
-        #     # check if game is not ruined (Check if the hive is still connected)
-        #     newBoard: Board = board
-        #     newBoard.remove_object(loc)
-        #     newBoard.add_object(newLoc)
-        #     # newBoard.checkIfValid() 
-        #     possible_moves.append(newLoc)
-        
-        # # lower left
-        # newLoc = Location(x-1,y-1)
-        # if(board.get_object(newLoc) is None):
-        #     # check if game is not ruined (Check if the hive is still connected)
-        #     newBoard: Board = board
-        #     newBoard.remove_object(loc)
-        #     newBoard.add_object(newLoc)
-        #     # newBoard.checkIfValid() 
-        #     possible_moves.append(newLoc)
             
         
-    
+ 
