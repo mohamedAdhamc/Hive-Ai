@@ -1,5 +1,6 @@
 from location import Location
 from game_object import GameObject
+from queen import Queen
 
 class QueenNotPlayedException(Exception):
     pass
