@@ -117,5 +117,39 @@ class Board:
             return True
         else:
             return False
-                
+        
+    def getPossibleDeployLocations(self, team: int):
+        """Gets the possible deploy location for an object based on their team.
+
+        Args:
+            team (int): team of the object (Player 1 or 2).
+        Returns:
+            list: List of the possible locations at which it can deploy on the hive.
+        """
+        
+        possible_locations = set()
+        objects = dict(self._objects)
+        for pos, obj in objects.items():
+            obj: GameObject
+            curr_x = obj.get_location().get_x()
+            curr_y = obj.get_location().get_y()
+            if(team == obj.get_team()):
+                d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
+                for dx,dy in d:
+                    current_search_loc = Location(curr_x + dx, curr_y + dy)
+                    if objects.get((current_search_loc),None) is None:  # Free position neihgbouring a freindly object
+                        touching_enemy = False
+                        # Make sure that this position isn't touching an enemy object
+                        for dx2,dy2 in d:
+                            search_loc = Location(curr_x + dx + dx2, curr_y + dy + dy2)
+                            if objects.get((search_loc),None) is not None:  # An object found touching this position
+                                object:GameObject = objects.get(search_loc)
+                                if(object.get_team() is not team):  # This Object is an enemy Object
+                                    touching_enemy = True
+                        if(touching_enemy is False):
+                            possible_locations.add(current_search_loc)
+                                    
+                        
+        print(possible_locations)
+        return possible_locations
 

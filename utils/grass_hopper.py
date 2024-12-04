@@ -3,17 +3,17 @@ from game_object import GameObject
 from board import Board
 
 class Grasshopper(GameObject):
-    def __init__(self, location):
+    def __init__(self, location, team):
 
-        super().__init__(location)  # Call the parent class constructor
+        super().__init__(location, team)  # Call the parent class constructor
 
         if not isinstance(location, Location):
             raise ValueError("location must be an instance of the Location class.")
         
         self._location = location
 
-    def __repr__(self):
-        return f"Grasshopper at {self.get_location()}"
+    # def __repr__(self):
+    #     return f"Grasshopper at {self.get_location()}"
     
     def get_next_possible_locations(self, board:Board):
         newLocations = []

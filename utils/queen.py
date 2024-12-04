@@ -4,15 +4,15 @@ from board import Board
 
 class Queen(GameObject):
     def __init__(self, location, team):
-        super().__init__(location)
+        super().__init__(location, team)
         
         if not isinstance(location, Location):
             raise ValueError("location must be an instance of the Location class.")
         
         self._location = location
     
-    def __repr__(self):
-        return f"Queen at {self.get_location()}"
+    # def __repr__(self):
+    #     return f"Queen at {self.get_location()}"
     
     def getPossibleMoves(self, board:Board):
         print("checking board:", board, "\n")

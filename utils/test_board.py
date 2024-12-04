@@ -38,13 +38,15 @@ try:
     loc1 = Location(0, 0)
     queen1 = Queen(loc1, team=1)
     loc2 = Location(2, 0)
-    grasshopper1 = Grasshopper(loc2)
+    grasshopper1 = Grasshopper(loc2, team=1)
     loc3 = Location(1, -1)
-    grasshopper2 = Grasshopper(loc3)
+    grasshopper2 = Grasshopper(loc3, 1)
     loc4 = Location(-1, 1)
     spider = Spider(loc4, team=1)
     loc5 = Location(3, 1)
     spider2 = Spider(loc5, team=1)
+    loc6 = Location(1, 3)
+    spider3 = Spider(loc6, team=2)
 
     # Add game objects to the board
     board.add_object(queen1)
@@ -52,12 +54,14 @@ try:
     board.add_object(grasshopper2)
     board.add_object(spider)
     board.add_object(spider2)
+    board.add_object(spider3)
     # print(board.get_object(Location(2, 0)))
     # print(board)
+    board.getPossibleDeployLocations(2)
     
     # Check possible moves
     # queen1.getPossibleMoves(board)
-    queen1.getPossibleMoves(board)
+    # queen1.getPossibleMoves(board)
     
 except (ValueError, KeyError) as e:
     print(e)
