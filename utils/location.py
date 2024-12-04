@@ -23,11 +23,14 @@ class Location:
     # coordinates can access the same value in the boards map
     def __hash__(self):
         return hash((self.x, self.y))
+    
 
     def __eq__(self, other):
         if isinstance(other, Location):
             return self.x == other.get_x() and self.y == other.get_y()
-        return False
-    
+        else:
+          raise ValueError("Should be Location")
+          
+          
     def __repr__(self):
         return f"location x:{self.x}, y:{self.y}"

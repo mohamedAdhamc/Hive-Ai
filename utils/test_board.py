@@ -1,6 +1,7 @@
 from location import Location
 from board import Board
 from grass_hopper import Grasshopper
+from spider import Spider
 from ant import Ant
 from queen import Queen
 from beetle import Beetle
@@ -59,31 +60,68 @@ def test_beetle_movement():
 
 
 # Example Usage
+# try:
+#     board = Board()
+#     loc1 = Location(5, 10)
+#     grasshopper1 = Grasshopper(loc1)
+#     loc2 = Location(15, 20)
+#     grasshopper2 = Grasshopper(loc2)
+
+#     # Add game objects to the board
+#     board.add_object(grasshopper1)
+#     board.add_object(grasshopper2)
+#     print(board)
+
+#     # Move a game object
+#     board.move_object(grasshopper1.get_location(), Location(2,1))
+#     print("\nAfter moving grasshopper1:")
+#     print(board)
+
+#     # Remove a game object
+#     board.remove_object(grasshopper2.get_location())
+#     print("\nAfter removing grasshopper2:")
+#     print(board)
+# except (ValueError, KeyError) as e:
+#     print(e)
+    
+    
+
+# Sherif testing
+
 try:
     #test_hive_broken()
     test_ant_movement()
     test_beetle_movement()
     board = Board()
-    loc1 = Location(5, 10)
-    # 0 for white 1 for black doesn't really matter
-    grasshopper1 = Grasshopper(loc1, 0)
-    loc2 = Location(15, 20)
-    grasshopper2 = Grasshopper(loc2, 1)
+    loc1 = Location(0, 0)
+    queen1 = Queen(loc1, team=1)
+    loc2 = Location(2, 0)
+    grasshopper1 = Grasshopper(loc2, team=1)
+    loc3 = Location(1, -1)
+    grasshopper2 = Grasshopper(loc3, 1)
+    loc4 = Location(-1, 1)
+    spider = Spider(loc4, team=1)
+    loc5 = Location(3, 1)
+    spider2 = Spider(loc5, team=1)
+    loc6 = Location(1, 3)
+    spider3 = Spider(loc6, team=2)
+
 
     # Add game objects to the board
+    board.add_object(queen1)
     board.add_object(grasshopper1)
     board.add_object(grasshopper2)
-    print(board)
-
-    # Move a game object
-    board.move_object(grasshopper1.get_location(), Location(2,1))
-    print("\nAfter moving grasshopper1:")
-    print(board)
-
-    # Remove a game object
-    board.remove_object(grasshopper2.get_location())
-    print("\nAfter removing grasshopper2:")
-    print(board)
+    board.add_object(spider)
+    board.add_object(spider2)
+    board.add_object(spider3)
+    # print(board.get_object(Location(2, 0)))
+    # print(board)
+    board.getPossibleDeployLocations(2)
+    
+    # Check possible moves
+    # queen1.getPossibleMoves(board)
+    # queen1.getPossibleMoves(board)
+    
 except (ValueError, KeyError) as e:
     print(e)
 
