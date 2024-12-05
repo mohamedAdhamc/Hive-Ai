@@ -234,30 +234,30 @@ class Board:
             return bool(self._objects.get(top_left, None) and self._objects.get(bottom_left, None))
         
         # moving to top right
-        if((dx, dy) == (1, 1)):
+        if((dx, dy) == (1, -1)):
             # check for right and top left  
             right: Location = oldLoc + (2, 0)
-            top_left: Location = oldLoc + (-1, 1)
+            top_left: Location = oldLoc + (-1, -1)
             return bool(self._objects.get(right, None) and self._objects.get(top_left, None))
         
         # moving bottom left
-        if((dx, dy) == (-1, -1)):
+        if((dx, dy) == (-1, 1)):
             # check for left and bottom right
             left: Location = oldLoc + (-2, 0)
-            bottom_right: Location = oldLoc + (1, -1)
+            bottom_right: Location = oldLoc + (1, 1)
             return bool(self._objects.get(left, None) and self._objects.get(bottom_right, None))
     
         # moving top left
-        if((dx, dy) == (-1, 1)):
+        if((dx, dy) == (-1, -1)):
             # check for left and top right
             left: Location = oldLoc + (-2, 0)
-            top_right: Location = oldLoc + (1, 1)
+            top_right: Location = oldLoc + (1, -1)
             return bool(self._objects.get(left, None) and self._objects.get(top_right, None))
     
         # moving bottom right
-        if((dx, dy) == (1, -1)):
+        if((dx, dy) == (1, 1)):
             # check for right and left bottom
             right: Location = oldLoc + (2, 0)
-            bottom_left: Location = oldLoc + (-1, -1)
+            bottom_left: Location = oldLoc + (-1, 1)
             return bool(self._objects.get(right, None) and self._objects.get(bottom_left, None))
 
