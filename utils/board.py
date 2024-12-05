@@ -1,6 +1,5 @@
 from location import Location
 from game_object import GameObject
-from queen import Queen
 
 class QueenNotPlayedException(Exception):
     pass
@@ -11,18 +10,39 @@ class Board:
         self._queen_played = (False, False)
         self._objects = {}
         self._turn_number = 0
-
+        self._hands = {}
+        self.initiate_game()
+        
+    def initiate_game(self):
+        from queen import Queen
+        from grass_hopper import Grasshopper
+        from spider import Spider
+        from ant import Ant
+        from beetle import Beetle
+        initial_state = {   # The initial objects in hand with each player at the beggining
+            Queen: 1,
+            Spider: 2,
+            Beetle: 2,
+            Ant: 3,
+            Grasshopper: 3
+        }
+        self._hands[1] = self._hands[2] = initial_state # assigned to player 1 and player 2
+    
     def add_object(self, game_object:GameObject):
         # check if the queen is already played in the first 4 rounds
+        from queen import Queen
         if not self._queen_played[0] and not self._queen_played[1]:
             if self._turn_number > 3:
                 raise QueenNotPlayedException
 
             elif isinstance(game_object, Queen):
-                #TODO: check if it is white or black for now both are true
-                self._queen_played = (True, True)
+                #TODO: check if it is white or black for now both are true -- done
+                # mark true for the player who played queen
+                self._queen_played[game_object.get_team()-1] = True
 
-        self._objects[(game_object.get_location())] = game_object
+        if(self._hands[game_object.get_team()][game_object] > 0):
+            self._objects[(game_object.get_location())] = game_object
+            self._hands[game_object.get_team()][game_object] -= 1 # Decrease chosen object by one
         
         # number of turns that passed
         self._turn_number += 1 
@@ -138,14 +158,14 @@ class Board:
             return False
         
     
-    def isSurroundedByFive(self,loc: Location):
+    def isSurroundedBySix(self,loc: Location):
         """
-        Checks whether the object is surrounded by five other objects or no
+        Checks whether the object is surrounded by six other objects or no
         Args:
             loc (Location): The location of the object.
 
         Returns:
-            bool: True if the object is surrounded by five, false otherwise.
+            bool: True if the object is surrounded by six, false otherwise.
         """
         curr_x = loc.get_x()
         curr_y = loc.get_y()
@@ -156,7 +176,7 @@ class Board:
             if self._objects.get((current_search_loc),None) is not None:
                 counter = counter + 1
         
-        if(counter == 5):
+        if(counter == 6):
             return True
         else:
             return False
@@ -195,4 +215,49 @@ class Board:
                         
         print(possible_locations)
         return possible_locations
+    
+    
+    def isNarrowPath(self, oldLoc: Location, newLoc: Location):
+        dx, dy = newLoc - oldLoc
+        # moving from left to right
+        if((dx, dy) == (2, 0)):
+            # check top right and bottom right
+            top_right: Location = oldLoc + (1, 1)
+            bottom_right: Location = oldLoc + (1, -1)
+            return bool(self._objects.get(top_right, None) and self._objects.get(bottom_right, None))
+        
+        # moving from right to left
+        if((dx, dy) == (-2, 0)):
+            # check top left and bottom left
+            top_left: Location = oldLoc + (-1, 1)
+            bottom_left: Location = oldLoc + (-1, -1)
+            return bool(self._objects.get(top_left, None) and self._objects.get(bottom_left, None))
+        
+        # moving to top right
+        if((dx, dy) == (1, 1)):
+            # check for right and top left  
+            right: Location = oldLoc + (2, 0)
+            top_left: Location = oldLoc + (-1, 1)
+            return bool(self._objects.get(right, None) and self._objects.get(top_left, None))
+        
+        # moving bottom left
+        if((dx, dy) == (-1, -1)):
+            # check for left and bottom right
+            left: Location = oldLoc + (-2, 0)
+            bottom_right: Location = oldLoc + (1, -1)
+            return bool(self._objects.get(left, None) and self._objects.get(bottom_right, None))
+    
+        # moving top left
+        if((dx, dy) == (-1, 1)):
+            # check for left and top right
+            left: Location = oldLoc + (-2, 0)
+            top_right: Location = oldLoc + (1, 1)
+            return bool(self._objects.get(left, None) and self._objects.get(top_right, None))
+    
+        # moving bottom right
+        if((dx, dy) == (1, -1)):
+            # check for right and left bottom
+            right: Location = oldLoc + (2, 0)
+            bottom_left: Location = oldLoc + (-1, -1)
+            return bool(self._objects.get(right, None) and self._objects.get(bottom_left, None))
 

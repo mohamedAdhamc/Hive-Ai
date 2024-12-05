@@ -34,3 +34,13 @@ class Location:
           
     def __repr__(self):
         return f"location x:{self.x}, y:{self.y}"
+    
+    def __add__(self, other):
+        if(not isinstance(other, Location)):
+            raise TypeError("Should be of type Location")
+        return (self.get_x() + other.get_x() , self.get_y() + other.get_y())
+    
+    def __sub__(self, other):
+        if(not isinstance(other, Location)):
+            raise TypeError("Should be of type Location")
+        return (self.get_x() - other.get_x() , self.get_y() - other.get_y())

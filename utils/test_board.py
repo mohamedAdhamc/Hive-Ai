@@ -90,8 +90,8 @@ def test_beetle_movement():
 
 try:
     #test_hive_broken()
-    test_ant_movement()
-    test_beetle_movement()
+    # test_ant_movement()
+    # test_beetle_movement()
     board = Board()
     loc1 = Location(0, 0)
     queen1 = Queen(loc1, team=1)

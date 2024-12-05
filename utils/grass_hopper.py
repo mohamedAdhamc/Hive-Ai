@@ -27,11 +27,15 @@ class Grasshopper(GameObject):
         d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
         for (dx,dy) in d:
             newLoc: Location = Location(x+dx,y+dy)
-            if(board.get_object(newLoc) is None):
+            if(board.get_object(newLoc) is not None):
+                new_x, new_y = x, y
+                while (board.get_object(Location(new_x, new_y)) is not None):
+                    new_x += dx
+                    new_y += dy
+                newLoc = Location(new_x, new_y) 
                 # check if game is not ruined (Check if the hive is still connected)
                 if(board.checkIfvalid(loc, newLoc)):
-                    if(not board.isSurroundedByFive(newLoc)):
-                        possible_moves.append(newLoc)
+                    possible_moves.append(newLoc)
                     
         return possible_moves
         
