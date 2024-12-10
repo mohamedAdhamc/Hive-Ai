@@ -1,6 +1,7 @@
-from location import Location
-from game_object import GameObject
-from queen import Queen
+from .location import Location
+
+from .pieces.game_object import GameObject
+from .pieces.queen import Queen
 
 class QueenNotPlayedException(Exception):
     pass
@@ -23,9 +24,9 @@ class Board:
                 self._queen_played = (True, True)
 
         self._objects[(game_object.get_location())] = game_object
-        
+
         # number of turns that passed
-        self._turn_number += 1 
+        self._turn_number += 1
 
     def get_object(self, location):
         """
@@ -39,13 +40,13 @@ class Board:
     def remove_object(self, location):
         """
         Remove a game object from a specific position.
-        
+
         Raises:
             KeyError: If there is no object at the specified position.
         """
         if not isinstance(location, Location):
             raise ValueError("location must be of Location class.")
-        
+
         if (location) not in self._objects:
             raise KeyError(f"No object found at location.")
         del self._objects[(location)]
@@ -53,7 +54,7 @@ class Board:
     def move_object(self, oldLocation, newLocation):
         """
         Move a game object from one position to another.
-        
+
         Raises:
             KeyError: If there is no object at the source position.
         """
@@ -93,7 +94,7 @@ class Board:
         Represent the board as a string.
         """
         return "\n".join([f"Position {pos}: {obj}" for pos, obj in self._objects.items()])
-    
+
     def checkIfvalid(self, oldLoc: Location, newLoc: Location):
         """
         Checks if the hive is still connected after every move.
@@ -108,7 +109,7 @@ class Board:
         newBoard[newLoc] = 1
         print("Qabl el mas7 Board:=>",newBoard)
         visited = []
-        
+
         # test neighbours
         def checkHive(loc: Location, prev:Location):
             visited.append(loc)
@@ -126,9 +127,9 @@ class Board:
                     checkHive(current_search_loc, loc)
                 else:
                     print("not found")
-            
+
             del newBoard[(loc)]
-                    
+
 
         checkHive(newLoc,oldLoc)
         print("ba3d el mas7 board:",newBoard)
@@ -136,8 +137,8 @@ class Board:
             return True
         else:
             return False
-        
-    
+
+
     def isSurroundedByFive(self,loc: Location):
         """
         Checks whether the object is surrounded by five other objects or no
@@ -155,12 +156,12 @@ class Board:
             current_search_loc = Location(curr_x + dx, curr_y + dy)
             if self._objects.get((current_search_loc),None) is not None:
                 counter = counter + 1
-        
+
         if(counter == 5):
             return True
         else:
             return False
-        
+
     def getPossibleDeployLocations(self, team: int):
         """Gets the possible deploy location for an object based on their team.
 
@@ -169,7 +170,7 @@ class Board:
         Returns:
             list: List of the possible locations at which it can deploy on the hive.
         """
-        
+
         possible_locations = set()
         objects = dict(self._objects)
         for pos, obj in objects.items():
@@ -191,8 +192,7 @@ class Board:
                                     touching_enemy = True
                         if(touching_enemy is False):
                             possible_locations.add(current_search_loc)
-                                    
-                        
+
+
         print(possible_locations)
         return possible_locations
-

@@ -1,9 +1,14 @@
-from board import Board
-from game_object import GameObject
-from location import Location
+import os
+import pygame
+
+from utils.location import Location
+
+from .game_object import GameObject
 
 class Ant(GameObject):
-    def _check_surrounding(self, board: Board):
+    sprite = pygame.image.load(os.path.join("assets", "Ant.png"))
+
+    def _check_surrounding(self, board):
         surrounding = 0
 
         x, y = self._location.get_x(), self._location.get_y()
@@ -17,7 +22,7 @@ class Ant(GameObject):
 
         return surrounding >= 5
 
-    def _check_trapped(self, board: Board):
+    def _check_trapped(self, board):
         x, y = self._location.get_x(), self._location.get_y()
         if (
             board.get_object(Location(x - 1, y + 1)) and
@@ -40,13 +45,13 @@ class Ant(GameObject):
         else:
             return False
 
-    def get_next_possible_locations(self, board: Board):
+    def get_next_possible_locations(self, board):
         #TODO: Destinations that are enclosed with some patterns are not allowed,
         # these have to be checked yet
 
         possible_moves: set[Location] = set()
         x, y = self._location.get_x(), self._location.get_y()
-        
+
         full_trap = self._check_surrounding(board)
         if full_trap or self._check_trapped(board):
             return []
@@ -75,4 +80,3 @@ class Ant(GameObject):
 
     def __repr__(self):
         return f"Ant at location ({self._location.get_x()}, {self._location.get_y()})"
-
