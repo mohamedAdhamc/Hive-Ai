@@ -18,6 +18,7 @@
         packages = with pkgs; [
           poetry
           python312
+          python312Packages.pygame
         ];
       };
     };
