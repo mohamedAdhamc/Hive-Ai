@@ -88,6 +88,23 @@ def test_beetle_movement():
 
 # Sherif testing
 
+def get_moves_for_team(board):
+    # Get the team pieces using the filter function
+    team_pieces = board.filter_team_pieces()
+    
+    move_pairs = []
+    
+    # Iterate through each piece in team_pieces
+    for start_location, piece in team_pieces.items():
+        # Get possible destination locations for this piece
+        possible_destinations = piece.getPossibleMoves(board)
+        
+        # Add each destination as a pair of start and destination to the result list
+        for destination in possible_destinations:
+            move_pairs.append([start_location, destination])
+    
+    return move_pairs
+
 try:
     #test_hive_broken()
     # test_ant_movement()
@@ -95,36 +112,32 @@ try:
     board = Board()
     loc1 = Location(0, 0)
     queen1 = Queen(loc1, team=1)
-    loc2 = Location(2, 0)
-    grasshopper1 = Grasshopper(loc2, team=1)
-    loc3 = Location(1, -1)
-    grasshopper2 = Grasshopper(loc3, 1)
-    loc4 = Location(-1, 1)
-    spider = Spider(loc4, team=1)
-    loc5 = Location(3, 1)
-    spider2 = Spider(loc5, team=2)
-    loc6 = Location(1, 3)
-    queen2 = Queen(loc6, team=2)
-    # loc7 = Location(1, 3)
-    # spider3 = Spider(loc7, team=2)
+    loc7 = Location(0, 1)
+    Queen2 = Queen(loc7, team=2)
+    loc8 = Location(2, 0)
+    Ant1 = Ant(loc8, team=1)
+    loc9 = Location(2, 1)
+    Ant2 = Ant(loc9, team=2)
+
 
     # board.initiate_game()
 
     # Add game objects to the board
     board.add_object(queen1)
-    board.add_object(grasshopper1)
-    board.add_object(grasshopper2)
-    board.add_object(spider)
-    board.add_object(spider2)
-    board.add_object(queen2)
+    board.add_object(Queen2)
+    board.add_object(Ant1)
+    board.add_object(Ant2)
+
+
     # print(board.get_object(Location(2, 0)))
     # print(board)
     # deploy1 = board.getPossibleDeployLocations(2)
     # print("deploy for team 1",deploy1)
     # print(board)
     # Check possible moves
-    queen2.getPossibleMoves(board)
+    #queen2.getPossibleMoves(board)
     # queen1.getPossibleMoves(board)
+    print(get_moves_for_team(board))
     
 except (ValueError, KeyError) as e:
     print(e)

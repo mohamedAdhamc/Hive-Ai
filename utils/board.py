@@ -12,6 +12,28 @@ class Board:
         self._turn_number = 0
         self._hands = {}
         self.initiate_game()
+
+
+
+    def turn(self):
+        """
+        Determines whose turn it is to play.
+        Returns:
+            bool: True if it's the first player's turn (even turn number),
+            False if it's the second player's turn (odd turn number).
+        """
+        return self._turn_number % 2 == 0
+
+
+    def filter_team_pieces(self):
+
+        if(self.turn()):
+            team_number=1
+        else:
+            team_number=2
+        # Filter out pieces where the team attribute matches the provided team_number
+        team_pieces = {location: piece for location, piece in self._objects.items() if piece.get_team() == team_number}
+        return team_pieces
         
     def initiate_game(self):
         from queen import Queen
