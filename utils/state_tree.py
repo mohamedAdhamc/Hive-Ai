@@ -1,4 +1,3 @@
-import copy
 from board import Board
 from game_object import GameObject
 from location import Location
@@ -13,7 +12,6 @@ class StateTree:
         self._board_state = _board_state
         self._root = StateTreeNode()
 
-
     def build_tree(self, node):
         if node.move:
             self.play_move(node.move)
@@ -24,6 +22,8 @@ class StateTree:
             node.children.append(child_node)
             if (node.depth < STATE_TREE_DEPTH):
                 self.build_tree(child_node)
+            else:
+                child_node.evaluation = self.evaluate_board()
         
         if node.move:
             self.reverse_move(node.move)
@@ -46,13 +46,16 @@ class StateTree:
             self._board_state._turn_number -= 1
             Board.move_object(self._board_state, Location(destination[0], destination[1]), Location(source[0], source[1]))
 
+    def evaluate_board(self):
+        pass
+
     def get_next_moves(self, board_state):
 
         if (board_state._turn_number == 0): #first move is always a piece in the middle
-            return [("ant", (0, 0)), ("beetle", (0, 0)), ("grass_hopper", (0, 0)), ("spider", (0, 0)), ("queen", (0, 0))]
+            return [("ant", (0, 0)), ("beetle", (0, 0)), ("grasshopper", (0, 0)), ("spider", (0, 0)), ("queen", (0, 0))]
         
         if (board_state._turn_number == 1): # second move is always a piece next to first piece
-            return [("ant", (1, 1)), ("beetle", (1, 1)), ("grass_hopper", (1, 1)), ("spider", (1, 1)), ("queen", (1, 1))]
+            return [("ant", (1, 1)), ("beetle", (1, 1)), ("grasshopper", (1, 1)), ("spider", (1, 1)), ("queen", (1, 1))]
         
         hand_pieces = []
         board_pices = []
@@ -60,15 +63,13 @@ class StateTree:
         #loop on all board_pices and get all possible moves for them but only if the queen is played
         return []
     
-    def get_best_move_minmax(type):
-        if True:
-            result = apply_minmax(3,True,root)    
-            for child in root.children:
-                if result == child.evaluation:
-                    return child.move
     
-
-
+    def get_best_move(self, algorithm_type):
+        if algorithm_type == "minmax":
+            result = apply_minmax(3, True, self._root)    
+        for child in self._root.children:
+            if result == child.evaluation:
+                return child.move
 
     @staticmethod
     def build_test_tree():
@@ -107,8 +108,3 @@ if __name__== '__main__':
     root = StateTree.build_test_tree()
     root.print_tree()
     
-
-
-
-
-    print(StateTree.get_best_move(True))
