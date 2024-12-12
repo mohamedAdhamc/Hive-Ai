@@ -3,7 +3,7 @@ from board import Board
 from game_object import GameObject
 from location import Location
 from state_tree_node import StateTreeNode
-from minmax import minmax_func
+from algorithms import apply_minmax, apply_alphabeta
 
 STATE_TREE_DEPTH = 4
 
@@ -59,12 +59,16 @@ class StateTree:
         #loop on all hand_pieces and determine all possible locations to put them on
         #loop on all board_pices and get all possible moves for them but only if the queen is played
         return []
-    def get_best_move(type):
+    
+    def get_best_move_minmax(type):
         if True:
-            result = minmax_func(3,True,root)    
+            result = apply_minmax(3,True,root)    
             for child in root.children:
                 if result == child.evaluation:
                     return child.move
+    
+
+
 
     @staticmethod
     def build_test_tree():
