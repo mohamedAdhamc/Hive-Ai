@@ -3,7 +3,7 @@ from utils.location import Location
 class GameObject:
     sprite = None
 
-    def __init__(self, location, team):
+    def __init__(self, location: Location, team):
         if not isinstance(location, Location):
             raise ValueError("location must be an instance of the Location class.")
         self._location = location

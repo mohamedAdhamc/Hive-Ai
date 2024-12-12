@@ -86,9 +86,6 @@ class Board:
                 removed.append((new_location, insect))
                 self._recurse_pop(new_location, removed)
 
-
-
-
     def __repr__(self):
         """
         Represent the board as a string.
@@ -193,6 +190,8 @@ class Board:
                         if(touching_enemy is False):
                             possible_locations.add(current_search_loc)
 
+        if self._turn_number == 0:
+            possible_locations.add(Location(0, 0))
 
-        print(possible_locations)
+        #print(possible_locations)
         return possible_locations
