@@ -23,6 +23,8 @@ class Spider(GameObject):
         y = initial_loc.get_y()
         
         def moveStepForward(loc: Location , prevLoc: Location, step):
+            if(board.isNarrowPath(prevLoc, loc)):
+                return False
             flag = False
             x = loc.get_x()
             y = loc.get_y()
@@ -69,8 +71,7 @@ class Spider(GameObject):
             print("initialLoc:",initial_loc)
             print("move:",newLoc)
             if(board.checkIfvalid(initial_loc, newLoc)):
-                if(not board.isSurroundedByFive(newLoc)):
-                    possible_moves.append(newLoc)
+                possible_moves.append(newLoc)
                 
         print("possible moves:", possible_moves)
         return possible_moves

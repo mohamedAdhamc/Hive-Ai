@@ -1,6 +1,5 @@
 from location import Location
 from game_object import GameObject
-from queen import Queen
 
 class QueenNotPlayedException(Exception):
     pass
@@ -8,24 +7,77 @@ class QueenNotPlayedException(Exception):
 class Board:
     def __init__(self):
         # white - black queen
-        self._queen_played = (False, False)
+        self._queen_played = [False, False]
         self._objects = {}
         self._turn_number = 0
+        self._hands = {}
+        self.initiate_game()
 
+
+
+    def turn(self):
+        """
+        Determines whose turn it is to play.
+        Returns:
+            bool: True if it's the first player's turn (even turn number),
+            False if it's the second player's turn (odd turn number).
+        """
+        return self._turn_number % 2 == 0
+
+
+    def filter_team_pieces(self):
+
+        if(self.turn()):
+            team_number=1
+        else:
+            team_number=2
+        # Filter out pieces where the team attribute matches the provided team_number
+        team_pieces = {location: piece for location, piece in self._objects.items() if piece.get_team() == team_number}
+        return team_pieces
+        
+    def initiate_game(self):
+        from queen import Queen
+        from grass_hopper import Grasshopper
+        from spider import Spider
+        from ant import Ant
+        from beetle import Beetle
+       
+       # The initial objects in hand with each player at the beggining
+        self._hands[1] = {   
+            Queen: 1,
+            Spider: 2,
+            Beetle: 2,
+            Ant: 3,
+            Grasshopper: 3
+        }
+        self._hands[2] = {
+            Queen: 1,
+            Spider: 2,
+            Beetle: 2,
+            Ant: 3,
+            Grasshopper: 3
+        }
+    
     def add_object(self, game_object:GameObject):
         # check if the queen is already played in the first 4 rounds
+        from queen import Queen
         if not self._queen_played[0] and not self._queen_played[1]:
             if self._turn_number > 3:
                 raise QueenNotPlayedException
 
             elif isinstance(game_object, Queen):
-                #TODO: check if it is white or black for now both are true
-                self._queen_played = (True, True)
-
-        self._objects[(game_object.get_location())] = game_object
+                #TODO: check if it is white or black for now both are true -- done
+                # mark true for the player who played queen
+                self._queen_played[game_object.get_team()-1] = True
+        print(game_object.__class__, self._hands[game_object.get_team()].get(game_object.__class__))
+        print(self._hands[game_object.get_team()].get(game_object.__class__))
+        if(self._hands[game_object.get_team()].get(game_object.__class__) > 0):
+            self._objects[(game_object.get_location())] = game_object
+            self._hands[game_object.get_team()][game_object.__class__] = self._hands[game_object.get_team()][game_object.__class__] - 1 # Decrease chosen object by one
         
         # number of turns that passed
         self._turn_number += 1 
+        print("object added")
 
     def get_object(self, location):
         """
@@ -103,7 +155,11 @@ class Board:
         Returns:
             bool: True if the hive is still connected, False otherwise.
         """
+        print("djhdk")
         newBoard = dict(self._objects)
+        print("newBOOOOARD", newBoard, "OldLoc",oldLoc)
+        print("newBOOOOARD", newBoard, "OldLoc",oldLoc)
+        print("newBoardloc", newBoard[oldLoc])
         del newBoard[(oldLoc)]
         newBoard[newLoc] = 1
         print("Qabl el mas7 Board:=>",newBoard)
@@ -138,14 +194,14 @@ class Board:
             return False
         
     
-    def isSurroundedByFive(self,loc: Location):
+    def isSurroundedBySix(self,loc: Location):
         """
-        Checks whether the object is surrounded by five other objects or no
+        Checks whether the object is surrounded by six other objects or no
         Args:
             loc (Location): The location of the object.
 
         Returns:
-            bool: True if the object is surrounded by five, false otherwise.
+            bool: True if the object is surrounded by six, false otherwise.
         """
         curr_x = loc.get_x()
         curr_y = loc.get_y()
@@ -156,7 +212,7 @@ class Board:
             if self._objects.get((current_search_loc),None) is not None:
                 counter = counter + 1
         
-        if(counter == 5):
+        if(counter == 6):
             return True
         else:
             return False
@@ -195,4 +251,70 @@ class Board:
                         
         print(possible_locations)
         return possible_locations
+    
+    
+    def isNarrowPath(self, oldLoc: Location, newLoc: Location):
+        diff = newLoc - oldLoc
+        dx, dy = diff.get_x(), diff.get_y()
+        print(Location(dx, dy) == Location(2, 0))
+        # print((dx, dy) == Location(2, 0))
+        # moving from left to right
+        if((dx, dy) == (2, 0)):
+            print("aaaha")
+            # check top right and bottom right
+            top_right: Location = oldLoc + Location(1, 1)
+            bottom_right: Location = oldLoc + Location(1, -1)
+            print("jshhjkdsk", type((top_right)))
+            print(bool(self.get_object((top_right)) and self.get_object((bottom_right))))
+            return bool(self.get_object((top_right)) and self.get_object((bottom_right)))
+        
+        # moving from right to left
+        if((dx, dy) == (-2, 0)):
+            print("aaaha")
+            # check top left and bottom left
+            top_left: Location = oldLoc + Location(-1, 1)
+            bottom_left: Location = oldLoc + Location(-1, -1)
+            print("jshhjkdsk", type(top_left))
+            print(bool(self.get_object(top_left) and self.get_object(bottom_left)))
+            return bool(self.get_object(top_left) and self.get_object(bottom_left))
+        
+        # moving to top right
+        if((dx, dy) == (1, -1)):
+            print("aaaha")
+            # check for right and top left  
+            right: Location = oldLoc + Location(2, 0)
+            top_left: Location = oldLoc + Location(-1, -1)
+            print("jshhjkdsk", type(right))
+            print(bool(self.get_object(right) and self.get_object(top_left)))
+            return bool(self.get_object(right) and self.get_object(top_left))
+        
+        # moving bottom left
+        if((dx, dy) == (-1, 1)):
+            print("aaaha")
+            # check for left and bottom right
+            left: Location = oldLoc + Location(-2, 0)
+            bottom_right: Location = oldLoc + Location(1, 1)
+            print("jshhjkdsk", type(left))
+            print(bool(self.get_object(left) and self.get_object(bottom_right)))
+            return bool(self.get_object(left) and self.get_object(bottom_right))
+    
+        # moving top left
+        if((dx, dy) == (-1, -1)):
+            print("aaaha")
+            # check for left and top right
+            left: Location = oldLoc + Location(-2, 0)
+            top_right: Location = oldLoc + Location(1, -1)
+            print("jshhjkdsk", (self.get_object(left)))
+            print(bool(self.get_object(left) and self.get_object(top_right)))
+            return bool(self.get_object(left) and self.get_object(top_right))
+    
+        # moving bottom right
+        if((dx, dy) == (1, 1)):
+            print("aaaha")
+            # check for right and left bottom
+            right: Location = oldLoc + Location(2, 0)
+            bottom_left: Location = oldLoc + Location(-1, 1)
+            print("jshhjkdsk",self.get_object(right))
+            print(bool(self.get_object(right) and self.get_object(bottom_left)))
+            return bool(self.get_object(right) and self.get_object(bottom_left))
 
