@@ -14,6 +14,7 @@ class StateTreeNode:
             return
         if self.depth > 0:
             print("|   " * (self.depth-1) + "|-> ", end="")
-            print(self.move)
+            #print(self.move)
+            print(self.move, self.evaluation)
         for child in self.children:
             child.print_tree()

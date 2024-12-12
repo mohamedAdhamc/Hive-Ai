@@ -3,6 +3,7 @@ from board import Board
 from game_object import GameObject
 from location import Location
 from state_tree_node import StateTreeNode
+from minmax import minmax_func
 
 STATE_TREE_DEPTH = 4
 
@@ -58,14 +59,19 @@ class StateTree:
         #loop on all hand_pieces and determine all possible locations to put them on
         #loop on all board_pices and get all possible moves for them but only if the queen is played
         return []
-
+    def get_best_move(type):
+        if True:
+            result = minmax_func(3,True,root)    
+            for child in root.children:
+                if result == child.evaluation:
+                    return child.move
 
     @staticmethod
     def build_test_tree():
-        values = [21, -50, -21, -17, -35, 24, 36, -30, -17, 16, 12, -24, 43, -24, -4, 35, -49, -47, -2, 13, 21, -47, 5, 26, -8, 25, -2]
+        values = [-50, 21, -21, -17, -35, 24, 36, -30, -17, 16, 12, -24, 43, -24, -4, 35, -49, -47, -2, 13, 22, -47, 5, 26, -8, 25, -2]
         board = Board()
         tree = StateTree(board)
-        tree._root.depth = 0
+        tree._root.depth = 0 
         tree._root.move = 'a0'
         child1 = StateTreeNode(tree._root, 'b1', 0, 1)
         child2 = StateTreeNode(tree._root, 'b2', 0, 1)
@@ -96,4 +102,9 @@ if __name__== '__main__':
     # this is how to instantiate the test tree that have a result of 21
     root = StateTree.build_test_tree()
     root.print_tree()
+    
 
+
+
+
+    print(StateTree.get_best_move(True))
