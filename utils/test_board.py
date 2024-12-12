@@ -102,22 +102,25 @@ try:
     loc4 = Location(-1, 1)
     spider = Spider(loc4, team=1)
     loc5 = Location(3, 1)
-    spider2 = Spider(loc5, team=1)
+    spider2 = Spider(loc5, team=2)
     loc6 = Location(1, 3)
-    spider3 = Spider(loc6, team=2)
+    queen2 = Queen(loc6, team=2)
+    # loc7 = Location(1, 3)
+    # spider3 = Spider(loc7, team=2)
 
+    board.initiate_game()
 
     # Add game objects to the board
     board.add_object(queen1)
     board.add_object(grasshopper1)
     board.add_object(grasshopper2)
     board.add_object(spider)
-    board.add_object(spider2)
-    board.add_object(spider3)
+    # board.add_object(spider2)
+    # board.add_object(queen2)
     # print(board.get_object(Location(2, 0)))
     # print(board)
-    board.getPossibleDeployLocations(2)
-    
+    deploy1 = board.getPossibleDeployLocations(2)
+    print(deploy1)
     # Check possible moves
     # queen1.getPossibleMoves(board)
     # queen1.getPossibleMoves(board)

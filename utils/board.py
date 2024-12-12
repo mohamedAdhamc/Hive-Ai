@@ -7,7 +7,7 @@ class QueenNotPlayedException(Exception):
 class Board:
     def __init__(self):
         # white - black queen
-        self._queen_played = (False, False)
+        self._queen_played = [False, False]
         self._objects = {}
         self._turn_number = 0
         self._hands = {}
@@ -19,14 +19,22 @@ class Board:
         from spider import Spider
         from ant import Ant
         from beetle import Beetle
-        initial_state = {   # The initial objects in hand with each player at the beggining
+       
+       # The initial objects in hand with each player at the beggining
+        self._hands[1] = {   
             Queen: 1,
             Spider: 2,
             Beetle: 2,
             Ant: 3,
             Grasshopper: 3
         }
-        self._hands[1] = self._hands[2] = initial_state # assigned to player 1 and player 2
+        self._hands[2] = {
+            Queen: 1,
+            Spider: 2,
+            Beetle: 2,
+            Ant: 3,
+            Grasshopper: 3
+        }
     
     def add_object(self, game_object:GameObject):
         # check if the queen is already played in the first 4 rounds
@@ -39,13 +47,15 @@ class Board:
                 #TODO: check if it is white or black for now both are true -- done
                 # mark true for the player who played queen
                 self._queen_played[game_object.get_team()-1] = True
-
-        if(self._hands[game_object.get_team()][game_object] > 0):
+        print(game_object.__class__, self._hands[game_object.get_team()].get(game_object.__class__))
+        print(self._hands[game_object.get_team()].get(game_object.__class__))
+        if(self._hands[game_object.get_team()].get(game_object.__class__) > 0):
             self._objects[(game_object.get_location())] = game_object
-            self._hands[game_object.get_team()][game_object] -= 1 # Decrease chosen object by one
+            self._hands[game_object.get_team()][game_object.__class__] = self._hands[game_object.get_team()][game_object.__class__] - 1 # Decrease chosen object by one
         
         # number of turns that passed
         self._turn_number += 1 
+        print("object added")
 
     def get_object(self, location):
         """
