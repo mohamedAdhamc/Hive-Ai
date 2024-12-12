@@ -133,7 +133,11 @@ class Board:
         Returns:
             bool: True if the hive is still connected, False otherwise.
         """
+        print("djhdk")
         newBoard = dict(self._objects)
+        print("newBOOOOARD", newBoard, "OldLoc",oldLoc)
+        print("newBOOOOARD", newBoard, "OldLoc",oldLoc)
+        print("newBoardloc", newBoard[oldLoc])
         del newBoard[(oldLoc)]
         newBoard[newLoc] = 1
         print("Qabl el mas7 Board:=>",newBoard)
@@ -228,46 +232,67 @@ class Board:
     
     
     def isNarrowPath(self, oldLoc: Location, newLoc: Location):
-        dx, dy = newLoc - oldLoc
+        diff = newLoc - oldLoc
+        dx, dy = diff.get_x(), diff.get_y()
+        print(Location(dx, dy) == Location(2, 0))
+        # print((dx, dy) == Location(2, 0))
         # moving from left to right
         if((dx, dy) == (2, 0)):
+            print("aaaha")
             # check top right and bottom right
-            top_right: Location = oldLoc + (1, 1)
-            bottom_right: Location = oldLoc + (1, -1)
-            return bool(self._objects.get(top_right, None) and self._objects.get(bottom_right, None))
+            top_right: Location = oldLoc + Location(1, 1)
+            bottom_right: Location = oldLoc + Location(1, -1)
+            print("jshhjkdsk", type((top_right)))
+            print(bool(self.get_object((top_right)) and self.get_object((bottom_right))))
+            return bool(self.get_object((top_right)) and self.get_object((bottom_right)))
         
         # moving from right to left
         if((dx, dy) == (-2, 0)):
+            print("aaaha")
             # check top left and bottom left
-            top_left: Location = oldLoc + (-1, 1)
-            bottom_left: Location = oldLoc + (-1, -1)
-            return bool(self._objects.get(top_left, None) and self._objects.get(bottom_left, None))
+            top_left: Location = oldLoc + Location(-1, 1)
+            bottom_left: Location = oldLoc + Location(-1, -1)
+            print("jshhjkdsk", type(top_left))
+            print(bool(self.get_object(top_left) and self.get_object(bottom_left)))
+            return bool(self.get_object(top_left) and self.get_object(bottom_left))
         
         # moving to top right
         if((dx, dy) == (1, -1)):
+            print("aaaha")
             # check for right and top left  
-            right: Location = oldLoc + (2, 0)
-            top_left: Location = oldLoc + (-1, -1)
-            return bool(self._objects.get(right, None) and self._objects.get(top_left, None))
+            right: Location = oldLoc + Location(2, 0)
+            top_left: Location = oldLoc + Location(-1, -1)
+            print("jshhjkdsk", type(right))
+            print(bool(self.get_object(right) and self.get_object(top_left)))
+            return bool(self.get_object(right) and self.get_object(top_left))
         
         # moving bottom left
         if((dx, dy) == (-1, 1)):
+            print("aaaha")
             # check for left and bottom right
-            left: Location = oldLoc + (-2, 0)
-            bottom_right: Location = oldLoc + (1, 1)
-            return bool(self._objects.get(left, None) and self._objects.get(bottom_right, None))
+            left: Location = oldLoc + Location(-2, 0)
+            bottom_right: Location = oldLoc + Location(1, 1)
+            print("jshhjkdsk", type(left))
+            print(bool(self.get_object(left) and self.get_object(bottom_right)))
+            return bool(self.get_object(left) and self.get_object(bottom_right))
     
         # moving top left
         if((dx, dy) == (-1, -1)):
+            print("aaaha")
             # check for left and top right
-            left: Location = oldLoc + (-2, 0)
-            top_right: Location = oldLoc + (1, -1)
-            return bool(self._objects.get(left, None) and self._objects.get(top_right, None))
+            left: Location = oldLoc + Location(-2, 0)
+            top_right: Location = oldLoc + Location(1, -1)
+            print("jshhjkdsk", (self.get_object(left)))
+            print(bool(self.get_object(left) and self.get_object(top_right)))
+            return bool(self.get_object(left) and self.get_object(top_right))
     
         # moving bottom right
         if((dx, dy) == (1, 1)):
+            print("aaaha")
             # check for right and left bottom
-            right: Location = oldLoc + (2, 0)
-            bottom_left: Location = oldLoc + (-1, 1)
-            return bool(self._objects.get(right, None) and self._objects.get(bottom_left, None))
+            right: Location = oldLoc + Location(2, 0)
+            bottom_left: Location = oldLoc + Location(-1, 1)
+            print("jshhjkdsk",self.get_object(right))
+            print(bool(self.get_object(right) and self.get_object(bottom_left)))
+            return bool(self.get_object(right) and self.get_object(bottom_left))
 

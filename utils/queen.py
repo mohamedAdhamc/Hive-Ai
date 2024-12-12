@@ -28,7 +28,7 @@ class Queen(GameObject):
             print("Chcekcing board:", board)
             print(board.get_object(newLoc))
             if(board.get_object(newLoc) is None):
-                
+                print("narrow:", board.isNarrowPath(loc, newLoc))
                 if(not board.isNarrowPath(loc, newLoc)): # Check if the path is not narrow
                     if(board.checkIfvalid(loc, newLoc)): # check if game is not ruined (Check if the hive is still connected)
                         possible_moves.append(newLoc)
