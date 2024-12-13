@@ -73,6 +73,41 @@ class Ant(GameObject):
             visited.append(piece)
 
         return list(possible_moves)
+    
+    def getPossibleMoves(self, board: Board):
+        #TODO: Destinations that are enclosed with some patterns are not allowed,
+        # these have to be checked yet
+
+        possible_moves: set[Location] = set()
+        x, y = self._location.get_x(), self._location.get_y()
+        
+        full_trap = self._check_surrounding(board)
+        if full_trap or self._check_trapped(board):
+            return []
+
+        surrounding = [self]
+        visited = []
+        for piece in surrounding:
+            if piece in visited:
+                surrounding.remove(piece)
+                continue
+
+            x, y = piece._location.get_x(), piece._location.get_y()
+            for dx, dy in [(1, -1), (-1, -1), (-2, 0), (-1, 1), (1, 1), (2, 0)]:
+                new_location = Location(x + dx, y + dy)
+
+                neighbour = board.get_object(new_location)
+                if not neighbour:
+                    if(not board.isNarrowPath(self.get_location(),new_location)):
+                        if board.check_if_hive_valid(self._location, new_location):
+                            possible_moves.add(new_location)
+                else:
+                    surrounding.append(neighbour)
+
+            visited.append(piece)
+
+        return list(possible_moves)
+    
 
     def __repr__(self):
         return f"Ant at location ({self._location.get_x()}, {self._location.get_y()})"
