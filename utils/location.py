@@ -19,6 +19,9 @@ class Location:
     def get_y(self):
         return self.y
 
+    def create_from_self(self, dx, dy):
+        return Location(self.x + dx, self.y + dy)
+
     # hash and eq need to defined, so different instances can with the same
     # coordinates can access the same value in the boards map
     def __hash__(self):
