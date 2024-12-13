@@ -2,11 +2,10 @@ import pygame
 
 from .hex_utils import (
     calculate_hex_dimensions,
-    hexagon_vertices, point_in_hexagon
+    hexagon_vertices
 )
 
 from utils.board import Board
-from utils.location import Location
 from utils.pieces import Ant, Beetle, Grasshopper, Queen, Spider
 
 # Screen
@@ -15,6 +14,7 @@ WIDTH, HEIGHT = 800, 600
 # Colors
 BACKGROUND = (255, 255, 255)  # Background
 BLACK = (0, 0, 0)  # Black for Lines
+GRAY_COLOR = (90, 90, 90)
 BEIGE_COLOR = (218, 194, 165)
 CYAN_COLOR = (0, 255, 255)
 HOVER_COLOR = (220, 220, 220)  # Light Grey When Hovered
@@ -56,12 +56,18 @@ class HiveGame:
         self.offset_y = 0
         self.selected_piece = None
         self.possible_selections_rect = {}
+        self.next_possible_locations = []
 
         self.init_piece_holder()
         # create a board
-        self.board = Board()
+        self.board = Board(self.win_callback)
 
         pygame.display.set_caption("Hive Game")
+
+    def win_callback(self, team):
+        self.running = False
+        won = "WHITE" if team == 0 else "BLACK"
+        print(f"{won} team won")
 
     def check_game_events(self):
         global HEX_RADIUS, HEX_WIDTH, HEX_HEIGHT, VERTICAL_SPACING, HORIZONTAL_SPACING
@@ -77,29 +83,29 @@ class HiveGame:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 # Zoom in/out with mouse wheel
-                if event.button == 4:  # Scroll Up
-                    if HEX_RADIUS < MAX_HEX_RADIUS:
-                        HEX_RADIUS += 5  # Increase radius
-                elif event.button == 5:  # Scroll Down
-                    if HEX_RADIUS > MIN_HEX_RADIUS:
-                        HEX_RADIUS -= 5  # Decrease radius
+                #if event.button == 4:  # Scroll Up
+                #    if HEX_RADIUS < MAX_HEX_RADIUS:
+                #        HEX_RADIUS += 5  # Increase radius
+                #elif event.button == 5:  # Scroll Down
+                #    if HEX_RADIUS > MIN_HEX_RADIUS:
+                #        HEX_RADIUS -= 5  # Decrease radius
 
-                self.check_piece_selection(mouse_pos)
+                self.check_piece_hand_selection(mouse_pos)
+                self.check_piece_click(mouse_pos)
                 self.check_clicked_possible_place(mouse_pos)
 
     def start_game_loop(self):
         global HEX_RADIUS, HEX_WIDTH, HEX_HEIGHT, VERTICAL_SPACING, HORIZONTAL_SPACING
 
         self.running = True
-        hex_states = {}
+        #hex_states = {}
 
-        clicked_this_frame = False  # Flag to track if click is processed yet
+        #clicked_this_frame = False  # Flag to track if click is processed yet
         while self.running:
             self.screen.fill(BACKGROUND)
-            print(self.possible_selections_rect)
             # Mouse
-            mouse_pos = pygame.mouse.get_pos()
-            mouse_pressed = pygame.mouse.get_pressed()
+            #mouse_pos = pygame.mouse.get_pos()
+            #mouse_pressed = pygame.mouse.get_pressed()
             self.draw_possible_deploy_locations()
 
 
@@ -130,14 +136,14 @@ class HiveGame:
             #            # Default white color
             #            pygame.draw.polygon(self.screen, BACKGROUND, hexagon)
             #        pygame.draw.polygon(self.screen, BLACK, hexagon, 2)  # Black outline
-
+            
             for piece in self.board._objects.values():
                 x, y = piece._location.get_x(), piece._location.get_y()
                 correct_x = x * HORIZONTAL_SPACING / 2
                 correct_y = y * VERTICAL_SPACING
 
                 p_width, p_height = piece.sprite.get_width(), piece.sprite.get_height()
-                color = BLACK if piece._team == 1 else BEIGE_COLOR
+                color = GRAY_COLOR if piece._team == 1 else BEIGE_COLOR
 
 
 
@@ -153,10 +159,11 @@ class HiveGame:
                 self.screen.blit(piece.sprite, (CENTER_X + correct_x - p_width / 2, CENTER_Y + correct_y - p_height / 2))
                 
 
-            if not mouse_pressed[0]:
-                clicked_this_frame = False        # Recalculate hexagon dimensions
+            #if not mouse_pressed[0]:
+            #    clicked_this_frame = False        # Recalculate hexagon dimensions
 
             self.draw_hand()
+            self._draw_hex_from_list(CYAN_COLOR, self.next_possible_locations)
             self.check_game_events()
 
             HEX_WIDTH, HEX_HEIGHT, VERTICAL_SPACING, HORIZONTAL_SPACING = calculate_hex_dimensions(
@@ -164,9 +171,9 @@ class HiveGame:
             )
 
             # Redraw grid with new offset
-            self.hexagons = draw_hex_grid(
-                HEX_GRID, HEX_GRID, HEX_RADIUS, self.offset_x, self.offset_y
-            )
+            #self.hexagons = draw_hex_grid(
+            #    HEX_GRID, HEX_GRID, HEX_RADIUS, self.offset_x, self.offset_y
+            #)
             pygame.display.flip()
 
     def init_piece_holder(self):
@@ -201,36 +208,60 @@ class HiveGame:
 
     def draw_possible_deploy_locations(self):
         if self.selected_piece:
-            # any team for now
-            for possible_location in self.board.getPossibleDeployLocations(0):
-                x, y = possible_location.get_x(), possible_location.get_y()
-                self.possible_selections_rect[possible_location] = pygame.draw.polygon(
-                    self.screen, CYAN_COLOR, 
-                    hexagon_vertices(CENTER_X + x * HORIZONTAL_SPACING / 2, CENTER_Y + y * VERTICAL_SPACING, HEX_RADIUS)
-                )
-                pygame.draw.polygon(
-                    self.screen, BLACK,
-                    hexagon_vertices(CENTER_X + x * HORIZONTAL_SPACING / 2, CENTER_Y + y * VERTICAL_SPACING, HEX_RADIUS), 3
-                )
+            team = self.board._turn_number % 2
+            self._draw_hex_from_list(CYAN_COLOR, self.board.getPossibleDeployLocations(team))
 
-    def check_clicked_possible_place(self, mouse_pos):
-        if not self.selected_piece:
+    def check_piece_click(self, mouse_pos):
+        # stop if there is a turn currently being played
+        if self.next_possible_locations:
             return
 
+        for location, piece in self.board._objects.items():
+            correct_x = CENTER_X + location.get_x() * HORIZONTAL_SPACING / 2
+            correct_y = CENTER_Y + location.get_y() * VERTICAL_SPACING
+            rect = piece.sprite.get_rect().move(correct_x, correct_y)
+
+            if rect.collidepoint(mouse_pos):
+                team = self.board._turn_number % 2
+                if team == piece._team:
+                    # add the current location as the first element so when moving the piece
+                    # it can be easily selected
+                    self.piece_to_be_moved = piece
+                    self.next_possible_locations.extend(piece.get_next_possible_locations(self.board))
+                    break
+
+    def check_clicked_possible_place(self, mouse_pos):
         for location, rect in self.possible_selections_rect.items():
             if rect.collidepoint(mouse_pos):
-                # all are team 0 for now
-                piece = self.selected_piece(location, 0)
-                self.board.add_object(piece)
-                self.selected_piece = None
-                break
+                if self.selected_piece:
+                    team = self.board._turn_number % 2
+                    piece = self.selected_piece(location, team)
+                    self.board.add_object(piece)
+                    self.selected_piece = None
+                    break
+                else:
+                    self.board.move_object(self.piece_to_be_moved._location, location)
+                    self.next_possible_locations.clear()
 
-        # while clearing after every fram is not the most optima
+        # while clearing after every fram is not the most optimum
         # but it is the simplest and what works for now
         self.possible_selections_rect.clear()
 
 
-    def check_piece_selection(self, mouse_pos):
+    def check_piece_hand_selection(self, mouse_pos):
         for piece_rect, piece in zip(self.piece_rects, self.hand):
             if piece_rect.collidepoint(mouse_pos):
                 self.selected_piece = piece
+
+    def _draw_hex_from_list(self, color, hex_list):
+        for location in hex_list:
+            x, y = location.get_x(), location.get_y()
+            self.possible_selections_rect[location] = pygame.draw.polygon(
+                self.screen, color, 
+                hexagon_vertices(CENTER_X + x * HORIZONTAL_SPACING / 2, CENTER_Y + y * VERTICAL_SPACING, HEX_RADIUS)
+            )
+            pygame.draw.polygon(
+                self.screen, BLACK,
+                hexagon_vertices(CENTER_X + x * HORIZONTAL_SPACING / 2, CENTER_Y + y * VERTICAL_SPACING, HEX_RADIUS), 3
+            )
+

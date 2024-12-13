@@ -7,26 +7,53 @@ class QueenNotPlayedException(Exception):
     pass
 
 class Board:
-    def __init__(self):
+    def __init__(self, win_callback):
         # white - black queen
-        self._queen_played = (False, False)
+        self._queen_played = [False, False]
+        self._queens_reference = [None, None]
         self._objects = {}
         self._turn_number = 0
 
+        self.win_callback = win_callback
+
     def add_object(self, game_object:GameObject):
         # check if the queen is already played in the first 4 rounds
-        if not self._queen_played[0] and not self._queen_played[1]:
+        if not self._queen_played[0] or not self._queen_played[1]:
             if self._turn_number > 3:
                 raise QueenNotPlayedException
 
             elif isinstance(game_object, Queen):
-                #TODO: check if it is white or black for now both are true
-                self._queen_played = (True, True)
+                self._queen_played[game_object._team] = True
+                self._queens_reference[game_object._team] = game_object
 
         self._objects[(game_object.get_location())] = game_object
 
         # number of turns that passed
+        print(self._queen_played)
         self._turn_number += 1
+        if self._turn_number > 4:
+            self.check_win_condition()
+
+    def check_win_condition(self):
+        d = [(2, 0), (-2, 0), (1, 1), (-1, 1), (1, -1), (-1, -1)]
+
+        for dx, dy in d:
+            test_location = self._queens_reference[0]._location
+            if not self.get_object(test_location.create_from_self(dx, dy)):
+                break
+        else:
+            self.win_callback(1)
+            return
+
+        for dx, dy in d:
+            test_location = self._queens_reference[1]._location
+            if not self.get_object(test_location.create_from_self(dx, dy)):
+                break
+        else:
+            self.win_callback(0)
+            return
+
+
 
     def get_object(self, location):
         """
@@ -63,6 +90,8 @@ class Board:
         object : GameObject = self._objects.pop((oldLocation))
         object.set_location(newLocation)
         self._objects[(newLocation)] = object
+
+        self._turn_number += 1
 
     def check_if_hive_valid(self ,old_loc: Location, new_loc: Location):
         removed = []
@@ -168,6 +197,8 @@ class Board:
             list: List of the possible locations at which it can deploy on the hive.
         """
 
+        d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
+
         possible_locations = set()
         objects = dict(self._objects)
         for pos, obj in objects.items():
@@ -175,7 +206,6 @@ class Board:
             curr_x = obj.get_location().get_x()
             curr_y = obj.get_location().get_y()
             if(team == obj.get_team()):
-                d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
                 for dx,dy in d:
                     current_search_loc = Location(curr_x + dx, curr_y + dy)
                     if objects.get((current_search_loc),None) is None:  # Free position neihgbouring a freindly object
@@ -192,6 +222,9 @@ class Board:
 
         if self._turn_number == 0:
             possible_locations.add(Location(0, 0))
+        elif self._turn_number == 1:
+            for dx, dy in d:
+                possible_locations.add(Location(dx, dy))
 
         #print(possible_locations)
         return possible_locations

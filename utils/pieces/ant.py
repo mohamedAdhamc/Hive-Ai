@@ -60,7 +60,6 @@ class Ant(GameObject):
         visited = []
         for piece in surrounding:
             if piece in visited:
-                surrounding.remove(piece)
                 continue
 
             x, y = piece._location.get_x(), piece._location.get_y()

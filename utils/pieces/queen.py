@@ -19,7 +19,7 @@ class Queen(GameObject):
     # def __repr__(self):
     #     return f"Queen at {self.get_location()}"
 
-    def getPossibleMoves(self, board):
+    def get_next_possible_locations(self, board):
         print("checking board:", board, "\n")
         possible_moves = []
         loc: Location = self.get_location()
