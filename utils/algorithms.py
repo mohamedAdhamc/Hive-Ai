@@ -28,7 +28,6 @@ def apply_alphabeta(depth, max_min, root, alpha=float('-inf'), beta=float('inf')
             alpha = max(alpha, root.evaluation)
             
             if beta <= alpha: # cut-off
-                print("beta cutoff")
                 break  
         
         return root.evaluation
@@ -42,13 +41,12 @@ def apply_alphabeta(depth, max_min, root, alpha=float('-inf'), beta=float('inf')
             beta = min(beta, root.evaluation)
             
             if beta <= alpha: 
-                print("alpha cutoff")
                 break 
         
         return root.evaluation
     
 import time
-def iterativeDepening(max_time,max_min,root):
+def iterative_depening(max_time, max_min, tree):
     # assuming start with depth 1 
     # Ex: a
     #     |->b
@@ -60,9 +58,10 @@ def iterativeDepening(max_time,max_min,root):
     while(True):
         if (time.time() - start_time) >= max_time:
             break
-        result = apply_alphabeta(depth,max_min,root)
+        result = apply_alphabeta(depth, max_min, tree._root)
         depth = depth + 1
-        # root.add_level    #Not implemented yet
+        tree.add_level(tree._root)
+        tree._depth = depth
     return result
 
 # def iterativeDepeningtest(max_time,root):

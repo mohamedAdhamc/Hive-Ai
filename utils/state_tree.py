@@ -2,14 +2,13 @@ from board import Board
 from game_object import GameObject
 from location import Location
 from state_tree_node import StateTreeNode
-from algorithms import apply_minmax, apply_alphabeta
-
-STATE_TREE_DEPTH = 4
+from algorithms import apply_minmax, apply_alphabeta, iterative_depening
 
 class StateTree:
 
-    def __init__(self, _board_state):
+    def __init__(self, _board_state, _depth):
         self._board_state = _board_state
+        self._depth = _depth
         self._root = StateTreeNode()
 
     def build_tree(self, node):
@@ -20,11 +19,29 @@ class StateTree:
         for move in next_possible_moves:
             child_node = StateTreeNode(node, move, 0, node.depth+1)
             node.children.append(child_node)
-            if (node.depth < STATE_TREE_DEPTH):
+            if (node.depth < self._depth - 1):
                 self.build_tree(child_node)
             else:
                 child_node.evaluation = self.evaluate_board()
         
+        if node.move:
+            self.reverse_move(node.move)
+
+    def add_level(self, node):
+        if node.move:
+            self.play_move(node.move)
+        
+        if (node.depth < self._depth):
+            node.evaluation = 0
+            for child_node in node.children:
+                self.add_level(child_node)
+        else:
+            node.evaluation = 0
+            next_possible_moves = self.get_next_moves(self._board_state)
+            for move in next_possible_moves:
+                child_node = StateTreeNode(node, move, self.evaluate_board(), node.depth+1)
+                node.children.append(child_node)
+
         if node.move:
             self.reverse_move(node.move)
 
@@ -47,7 +64,7 @@ class StateTree:
             Board.move_object(self._board_state, Location(destination[0], destination[1]), Location(source[0], source[1]))
 
     def evaluate_board(self):
-        pass
+        return 5
 
     def get_next_moves(self, board_state):
 
@@ -64,9 +81,13 @@ class StateTree:
         return []
     
     
-    def get_best_move(self, algorithm_type):
-        if algorithm_type == "minmax":
-            result = apply_minmax(3, True, self._root)    
+    def get_best_move(self, algorithm_type, time = 0, max_min = True):
+        if algorithm_type == "min-max":
+            result = apply_minmax(self._depth, max_min, self._root)
+        elif algorithm_type == "alpha-beta":
+            result = apply_alphabeta(self._depth, max_min, self._root)
+        elif algorithm_type == "iterative":
+            result = iterative_depening(time, max_min, self)
         for child in self._root.children:
             if result == child.evaluation:
                 return child.move
@@ -99,12 +120,15 @@ class StateTree:
         return tree._root
 
 if __name__== '__main__':
-    # board = Board()
-    # tree = StateTree(board)
-    # tree.build_tree(tree._root)
+    board = Board()
+    tree = StateTree(board, 1)
+    tree.build_tree(tree._root)
+    print(tree.get_best_move("iterative", 0.001))
+    # tree._root.print_tree()
+    # tree.add_level(tree._root)
     # tree._root.print_tree()
 
     # this is how to instantiate the test tree that have a result of 21
-    root = StateTree.build_test_tree()
-    root.print_tree()
+    # root = StateTree.build_test_tree()
+    # root.print_tree()
     
