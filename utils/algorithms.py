@@ -46,4 +46,33 @@ def apply_alphabeta(depth, max_min, root, alpha=float('-inf'), beta=float('inf')
                 break 
         
         return root.evaluation
+    
+import time
+def iterativeDepening(max_time,max_min,root):
+    # assuming start with depth 1 
+    # Ex: a
+    #     |->b
+    #     |->c
+    #     |->d
+    start_time = time.time()
+    result = None
+    depth= 1
+    while(True):
+        if (time.time() - start_time) >= max_time:
+            break
+        result = apply_alphabeta(depth,max_min,root)
+        depth = depth + 1
+        # root.add_level    #Not implemented yet
+    return result
 
+# def iterativeDepeningtest(max_time,root):
+#     start_time = time.time()
+#     result = None
+#     for i in range(1, 4):
+#         elapsedTime = round(time.time()-start_time,20)
+#         print(elapsedTime)
+#         print("result after ",result)
+#         if time.time() - start_time >= max_time:
+#             break
+#         result = apply_alphabeta(i,True,root)
+#     return result
