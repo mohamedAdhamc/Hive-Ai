@@ -25,6 +25,7 @@ class Beetle(GameObject):
 
         for dx, dy in [(2, 0), (-2, 0), (1, 1), (-1, 1), (-1, -1), (1, -1)]:
             new_location = Location(x + dx, y + dy)
+            
             if board.check_if_hive_valid(self._location, new_location):
                 possible_locations.append(new_location)
 

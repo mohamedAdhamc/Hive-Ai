@@ -32,4 +32,3 @@ class GameObject:
 
     def get_next_possible_locations(self, board):
         raise NotImplementedError
-

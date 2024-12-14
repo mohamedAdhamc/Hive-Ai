@@ -149,13 +149,12 @@ class HiveGame:
                 p_width, p_height = piece.sprite.get_width(), piece.sprite.get_height()
                 color = GRAY_COLOR if piece._team == 1 else BEIGE_COLOR
 
-
-
                 # offset will be accounted for later
                 self.pieces_rect.append((pygame.draw.polygon(
                     self.screen, color,
                     hexagon_vertices(correct_x + CENTER_X, correct_y + CENTER_Y, HEX_RADIUS)
                 ), piece))
+
                 pygame.draw.polygon(
                     self.screen, BLACK,
                     hexagon_vertices(CENTER_X + correct_x, CENTER_Y + correct_y, HEX_RADIUS), 3
@@ -196,7 +195,7 @@ class HiveGame:
             Queen, Spider, Spider
         ])
         self.piece_rects = []
-
+        
         # I got them by trial and error so don't ask me
         self.holder_width = WIDTH * 3/4 + 20
         self.holder_height = HEIGHT * 1/4 + 10

@@ -3,6 +3,7 @@ from .location import Location
 from .pieces.game_object import GameObject
 from .pieces import Queen, Beetle
 
+
 class QueenNotPlayedException(Exception):
     pass
 
