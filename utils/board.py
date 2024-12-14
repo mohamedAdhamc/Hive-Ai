@@ -1,7 +1,8 @@
 from .location import Location
 
 from .pieces.game_object import GameObject
-from .pieces.queen import Queen
+from .pieces import Queen, Beetle
+
 
 class QueenNotPlayedException(Exception):
     pass
@@ -88,10 +89,18 @@ class Board:
         if (oldLocation) not in self._objects:
             raise KeyError(f"No object found at position old location.")
         object : GameObject = self._objects.pop((oldLocation))
+
+        if isinstance(object, Beetle):
+            piece_at_location = self._objects.pop((newLocation), None)
+            if piece_at_location:
+                object.put_on_top_of(piece_at_location)
+
         object.set_location(newLocation)
         self._objects[(newLocation)] = object
 
         self._turn_number += 1
+        if self._turn_number > 4:
+            self.check_win_condition()
 
     def check_if_hive_valid(self ,old_loc: Location, new_loc: Location):
         removed = []

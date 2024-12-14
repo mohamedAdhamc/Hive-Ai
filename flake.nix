@@ -19,6 +19,8 @@
           poetry
           python312
           python312Packages.pygame
+
+          pyright
         ];
       };
     };
