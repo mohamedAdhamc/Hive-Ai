@@ -33,10 +33,3 @@ class GameObject:
     def get_next_possible_locations(self, board):
         raise NotImplementedError
 
-    def draw(self, screen):
-        if not self.sprite:
-            raise TypeError("Sprite has not yet been initialized")
-
-        # TODO: The piece location is for sure different from the window locations
-        # so some calculations must be done first
-        screen.blit(self.sprite, (self._location.get_x(), self._location.get_y()))
