@@ -28,7 +28,6 @@ def apply_alphabeta(depth, max_min, root, alpha=float('-inf'), beta=float('inf')
             alpha = max(alpha, root.evaluation)
             
             if beta <= alpha: # cut-off
-                print("beta cutoff")
                 break  
         
         return root.evaluation
@@ -42,8 +41,38 @@ def apply_alphabeta(depth, max_min, root, alpha=float('-inf'), beta=float('inf')
             beta = min(beta, root.evaluation)
             
             if beta <= alpha: 
-                print("alpha cutoff")
                 break 
         
         return root.evaluation
+    
+import time
+def iterative_depening(max_time, max_min, tree):
+    # assuming start with depth 1 
+    # Ex: a
+    #     |->b
+    #     |->c
+    #     |->d
+    start_time = time.time()
+    result = None
+    depth= 1
+    while(True):
+        if (time.time() - start_time) >= max_time:
+            break
+        result = apply_alphabeta(depth, max_min, tree._root)
+        depth = depth + 1
+        tree.add_level(tree._root)
+        tree._depth = depth
+    print("last level reached by iterative deepening: ", depth)
+    return result
 
+# def iterativeDepeningtest(max_time,root):
+#     start_time = time.time()
+#     result = None
+#     for i in range(1, 4):
+#         elapsedTime = round(time.time()-start_time,20)
+#         print(elapsedTime)
+#         print("result after ",result)
+#         if time.time() - start_time >= max_time:
+#             break
+#         result = apply_alphabeta(i,True,root)
+#     return result
