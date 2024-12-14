@@ -1,20 +1,25 @@
-from location import Location
-from game_object import GameObject
-from board import Board
+import os
+import pygame
+
+from utils.location import Location
+
+from .game_object import GameObject
 
 class Spider(GameObject):
+    sprite = pygame.image.load(os.path.join("assets", "Spider.png"))
+
     def __init__(self, location, team):
         super().__init__(location, team)
-        
+
         if not isinstance(location, Location):
             raise ValueError("location must be an instance of the Location class.")
-        
+
         self._location = location
-    
+
     # def __repr__(self):
     #     return f"Spider at {self.get_location()}"
-    
-    def getPossibleMoves(self, board:Board):
+
+    def get_next_possible_locations(self, board):
         possible_moves = []
         moves = []
         initial_loc: Location = self.get_location()
@@ -66,12 +71,3 @@ class Spider(GameObject):
                 possible_moves.append(newLoc)
                 
         return possible_moves
-        
-                
-        
-        
-            
-        
-            
-        
-    
