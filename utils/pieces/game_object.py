@@ -22,7 +22,7 @@ class GameObject:
         return self._team
 
     def set_team(self, team):
-        if(isinstance(team, int) and (team == 1 or team == 2)):
+        if(isinstance(team, int) and (team == 0 or team == 1)):
             self._team = team
         else:
             raise ValueError("Team should be represented as a number (1 or 2)")

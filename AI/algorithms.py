@@ -62,6 +62,7 @@ def iterative_depening(max_time, max_min, tree):
         depth = depth + 1
         tree.add_level(tree._root)
         tree._depth = depth
+    print("last level reached by iterative deepening: ", depth)
     return result
 
 # def iterativeDepeningtest(max_time,root):
