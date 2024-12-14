@@ -98,9 +98,8 @@ class Ant(GameObject):
 
                 neighbour = board.get_object(new_location)
                 if not neighbour:
-                    if(not board.isNarrowPath(self.get_location(),new_location)):
-                        if board.check_if_hive_valid(self._location, new_location):
-                            possible_moves.add(new_location)
+                    if board.check_if_hive_valid(self._location, new_location):
+                        possible_moves.add(new_location)
                 else:
                     surrounding.append(neighbour)
 

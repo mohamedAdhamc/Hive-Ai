@@ -26,7 +26,7 @@ class Board:
 
 
     def filter_team_pieces(self):
-
+        print("Turn:",self.turn())
         if(self.turn()):
             team_number=1
         else:
@@ -69,15 +69,12 @@ class Board:
                 #TODO: check if it is white or black for now both are true -- done
                 # mark true for the player who played queen
                 self._queen_played[game_object.get_team()-1] = True
-        print(game_object.__class__, self._hands[game_object.get_team()].get(game_object.__class__))
-        print(self._hands[game_object.get_team()].get(game_object.__class__))
         if(self._hands[game_object.get_team()].get(game_object.__class__) > 0):
             self._objects[(game_object.get_location())] = game_object
             self._hands[game_object.get_team()][game_object.__class__] = self._hands[game_object.get_team()][game_object.__class__] - 1 # Decrease chosen object by one
         
         # number of turns that passed
         self._turn_number += 1 
-        print("object added")
 
     def get_object(self, location):
         """
@@ -155,20 +152,14 @@ class Board:
         Returns:
             bool: True if the hive is still connected, False otherwise.
         """
-        print("djhdk")
         newBoard = dict(self._objects)
-        print("newBOOOOARD", newBoard, "OldLoc",oldLoc)
-        print("newBOOOOARD", newBoard, "OldLoc",oldLoc)
-        print("newBoardloc", newBoard[oldLoc])
         del newBoard[(oldLoc)]
         newBoard[newLoc] = 1
-        print("Qabl el mas7 Board:=>",newBoard)
         visited = []
         
         # test neighbours
         def checkHive(loc: Location, prev:Location):
             visited.append(loc)
-            print("location:",loc)
             curr_x = loc.get_x()
             curr_y = loc.get_y()
             d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
@@ -176,18 +167,14 @@ class Board:
                 current_search_loc = Location(curr_x + dx, curr_y + dy)
                 if((curr_x + dx, curr_y + dy) == (prev.get_x(), prev.get_y()) or current_search_loc in visited):
                     continue
-                print("search:",current_search_loc)
                 if newBoard.get((current_search_loc),None) is not None:
-                    print("found")
                     checkHive(current_search_loc, loc)
-                else:
-                    print("not found")
+                # else:
             
             del newBoard[(loc)]
                     
 
         checkHive(newLoc,oldLoc)
-        print("ba3d el mas7 board:",newBoard)
         if(len(newBoard) == 0):
             return True
         else:
@@ -249,72 +236,51 @@ class Board:
                             possible_locations.add(current_search_loc)
                                     
                         
-        print(possible_locations)
         return possible_locations
     
     
     def isNarrowPath(self, oldLoc: Location, newLoc: Location):
         diff = newLoc - oldLoc
         dx, dy = diff.get_x(), diff.get_y()
-        print(Location(dx, dy) == Location(2, 0))
-        # print((dx, dy) == Location(2, 0))
         # moving from left to right
         if((dx, dy) == (2, 0)):
-            print("aaaha")
             # check top right and bottom right
             top_right: Location = oldLoc + Location(1, 1)
             bottom_right: Location = oldLoc + Location(1, -1)
-            print("jshhjkdsk", type((top_right)))
-            print(bool(self.get_object((top_right)) and self.get_object((bottom_right))))
             return bool(self.get_object((top_right)) and self.get_object((bottom_right)))
         
         # moving from right to left
         if((dx, dy) == (-2, 0)):
-            print("aaaha")
             # check top left and bottom left
             top_left: Location = oldLoc + Location(-1, 1)
             bottom_left: Location = oldLoc + Location(-1, -1)
-            print("jshhjkdsk", type(top_left))
-            print(bool(self.get_object(top_left) and self.get_object(bottom_left)))
             return bool(self.get_object(top_left) and self.get_object(bottom_left))
         
         # moving to top right
         if((dx, dy) == (1, -1)):
-            print("aaaha")
             # check for right and top left  
             right: Location = oldLoc + Location(2, 0)
             top_left: Location = oldLoc + Location(-1, -1)
-            print("jshhjkdsk", type(right))
-            print(bool(self.get_object(right) and self.get_object(top_left)))
             return bool(self.get_object(right) and self.get_object(top_left))
         
         # moving bottom left
         if((dx, dy) == (-1, 1)):
-            print("aaaha")
             # check for left and bottom right
             left: Location = oldLoc + Location(-2, 0)
             bottom_right: Location = oldLoc + Location(1, 1)
-            print("jshhjkdsk", type(left))
-            print(bool(self.get_object(left) and self.get_object(bottom_right)))
             return bool(self.get_object(left) and self.get_object(bottom_right))
     
         # moving top left
         if((dx, dy) == (-1, -1)):
-            print("aaaha")
             # check for left and top right
             left: Location = oldLoc + Location(-2, 0)
             top_right: Location = oldLoc + Location(1, -1)
-            print("jshhjkdsk", (self.get_object(left)))
-            print(bool(self.get_object(left) and self.get_object(top_right)))
             return bool(self.get_object(left) and self.get_object(top_right))
     
         # moving bottom right
         if((dx, dy) == (1, 1)):
-            print("aaaha")
             # check for right and left bottom
             right: Location = oldLoc + Location(2, 0)
             bottom_left: Location = oldLoc + Location(-1, 1)
-            print("jshhjkdsk",self.get_object(right))
-            print(bool(self.get_object(right) and self.get_object(bottom_left)))
             return bool(self.get_object(right) and self.get_object(bottom_left))
 

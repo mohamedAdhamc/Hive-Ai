@@ -59,6 +59,6 @@ class Grasshopper(GameObject):
                 # check if game is not ruined (Check if the hive is still connected)
                 if(board.checkIfvalid(loc, newLoc)):
                     possible_moves.append(newLoc)
-        print(possible_moves)
+        # print(possible_moves)
         return possible_moves
         

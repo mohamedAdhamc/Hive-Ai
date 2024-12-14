@@ -15,7 +15,6 @@ class Spider(GameObject):
     #     return f"Spider at {self.get_location()}"
     
     def getPossibleMoves(self, board:Board):
-        print("checking board:", board, "\n")
         possible_moves = []
         moves = []
         initial_loc: Location = self.get_location()
@@ -42,7 +41,6 @@ class Spider(GameObject):
                 return False
             
             if(step == 1): # If reached the final step with no violations return true
-                print("curr_location:",loc,"Prev_location:", prevLoc)
                 moves.append(loc)
                 return True
             
@@ -58,22 +56,15 @@ class Spider(GameObject):
         d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
         for (dx,dy) in d:
             newLoc: Location = Location(x+dx,y+dy)
-            print("Chcekcing for:", newLoc)
-            print("Chcekcing board:", board)
-            print(board.get_object(newLoc))
             if(board.get_object(newLoc) is None):
-                print("Checking moves:")
                 # Check if this step can be taken by the spider
                 result = moveStepForward(newLoc, initial_loc, 3)
             
         
         for newLoc in moves:
-            print("initialLoc:",initial_loc)
-            print("move:",newLoc)
             if(board.checkIfvalid(initial_loc, newLoc)):
                 possible_moves.append(newLoc)
                 
-        print("possible moves:", possible_moves)
         return possible_moves
         
                 
