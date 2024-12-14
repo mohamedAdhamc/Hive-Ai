@@ -1,10 +1,10 @@
-from location import Location
-from board import Board
-from grass_hopper import Grasshopper
-from spider import Spider
-from ant import Ant
-from queen import Queen
-from beetle import Beetle
+from utils.location import Location
+from utils.board import Board
+from utils.pieces.grass_hopper import Grasshopper
+from utils.pieces.spider import Spider
+from utils.pieces.ant import Ant
+from utils.pieces.queen import Queen
+from utils.pieces.beetle import Beetle
 
 def test_hive_broken():
     print("---------------------Testing Hive breaking move--------------------")
@@ -88,39 +88,62 @@ def test_beetle_movement():
 
 # Sherif testing
 
+def get_moves_for_team(board):
+    # Get the team pieces using the filter function
+    team_pieces = board.filter_team_pieces()
+    print("team pieces:", team_pieces)
+    move_pairs = []
+    moves = {}
+    
+    # Iterate through each piece in team_pieces
+    for start_location, piece in team_pieces.items():
+        # Get possible destination locations for this piece
+        possible_destinations = piece.get_next_possible_locations(board)
+        moves[piece] = []
+        
+        # Add each destination as a pair of start and destination to the result list
+        for destination in possible_destinations:
+            moves[piece].append(destination)
+            # move_pairs.append([start_location, destination])
+    
+        print("piece:", piece, moves[piece])
+    # return move_pairs
+    return moves
+
 try:
     #test_hive_broken()
-    test_ant_movement()
-    test_beetle_movement()
-    board = Board()
+    # test_ant_movement()
+    # test_beetle_movement()
+    board = Board(lambda x: x)
     loc1 = Location(0, 0)
-    queen1 = Queen(loc1, team=1)
-    loc2 = Location(2, 0)
-    grasshopper1 = Grasshopper(loc2, team=1)
-    loc3 = Location(1, -1)
-    grasshopper2 = Grasshopper(loc3, 1)
-    loc4 = Location(-1, 1)
-    spider = Spider(loc4, team=1)
-    loc5 = Location(3, 1)
-    spider2 = Spider(loc5, team=1)
-    loc6 = Location(1, 3)
-    spider3 = Spider(loc6, team=2)
+    queen1 = Queen(loc1, 0)
+    loc7 = Location(1, 1)
+    Queen2 = Queen(loc7, 1)
+    loc8 = Location(2, 0)
+    Ant1 = Ant(loc8, 0)
+    loc9 = Location(3, 1)
+    grasshopper = Grasshopper(loc9, 0)
+    # Ant2 = Ant(loc9, team=2)
 
+    # board.initiate_game()
 
     # Add game objects to the board
     board.add_object(queen1)
-    board.add_object(grasshopper1)
-    board.add_object(grasshopper2)
-    board.add_object(spider)
-    board.add_object(spider2)
-    board.add_object(spider3)
+    board.add_object(Queen2)
+    board.add_object(Ant1)
+    board.add_object(grasshopper)
+    print("Board:", board)
+    # print(Queen2.get_next_possible_locations(board))
+
     # print(board.get_object(Location(2, 0)))
     # print(board)
-    board.getPossibleDeployLocations(2)
-    
+    # deploy1 = board.getPossibleDeployLocations(2)
+    # print("deploy for team 1",deploy1)
+    # print(board)
     # Check possible moves
+    #queen2.getPossibleMoves(board)
     # queen1.getPossibleMoves(board)
-    # queen1.getPossibleMoves(board)
+    print(get_moves_for_team(board))
     
 except (ValueError, KeyError) as e:
     print(e)

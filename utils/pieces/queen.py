@@ -20,23 +20,18 @@ class Queen(GameObject):
     #     return f"Queen at {self.get_location()}"
 
     def get_next_possible_locations(self, board):
-        print("checking board:", board, "\n")
         possible_moves = []
         loc: Location = self.get_location()
         x = loc.get_x()
         y = loc.get_y()
-
+        
         d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
         for (dx,dy) in d:
             newLoc: Location = Location(x+dx,y+dy)
-            print("Chcekcing for:", newLoc)
-            print("Chcekcing board:", board)
-            print(board.get_object(newLoc))
             if(board.get_object(newLoc) is None):
-                # check if game is not ruined (Check if the hive is still connected)
-                if(board.checkIfvalid(loc, newLoc)):
-                    if(not board.isSurroundedByFive(newLoc)):
+                # print("true1", newLoc)
+                if(not board.isNarrowPath(loc, newLoc)): # Check if the path is not narrow
+                    if(board.checkIfvalid(loc, newLoc)): # check if game is not ruined (Check if the hive is still connected)
                         possible_moves.append(newLoc)
-
-        print("Possible Moves", possible_moves)
+                    
         return possible_moves

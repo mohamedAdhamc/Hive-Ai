@@ -32,8 +32,18 @@ class Location:
         if isinstance(other, Location):
             return self.x == other.get_x() and self.y == other.get_y()
         else:
-          raise ValueError("Should be Location")
+          raise ValueError("Should be Location iiaiai")
           
           
     def __repr__(self):
         return f"location x:{self.x}, y:{self.y}"
+    
+    def __add__(self, other):
+        if(not isinstance(other, Location)):
+            raise TypeError("Should be of type Location")
+        return Location(self.get_x() + other.get_x() , self.get_y() + other.get_y())
+    
+    def __sub__(self, other):
+        if(not isinstance(other, Location)):
+            raise TypeError("Should be of type Location")
+        return Location(self.get_x() - other.get_x() , self.get_y() - other.get_y())

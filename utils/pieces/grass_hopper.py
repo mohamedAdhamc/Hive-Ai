@@ -22,20 +22,24 @@ class Grasshopper(GameObject):
     #     return f"Grasshopper at {self.get_location()}"
 
     def get_next_possible_locations(self, board):
-        newLocations = []
-        possible_moves = []
+            newLocations = []
+            possible_moves = []
 
-        loc = self.get_location()
-        x = loc.get_x()
-        y = loc.get_y()
-
-        d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
-        for (dx,dy) in d:
-            newLoc: Location = Location(x+dx,y+dy)
-            if(board.get_object(newLoc) is None):
-                # check if game is not ruined (Check if the hive is still connected)
-                if(board.checkIfvalid(loc, newLoc)):
-                    if(not board.isSurroundedByFive(newLoc)):
+            loc = self.get_location()
+            x = loc.get_x()
+            y = loc.get_y()
+            
+            d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
+            for (dx,dy) in d:
+                newLoc: Location = Location(x+dx,y+dy)
+                if(board.get_object(newLoc) is not None):
+                    new_x, new_y = x, y
+                    while (board.get_object(Location(new_x, new_y)) is not None):
+                        new_x += dx
+                        new_y += dy
+                    newLoc = Location(new_x, new_y) 
+                    # check if game is not ruined (Check if the hive is still connected)
+                    if(board.checkIfvalid(loc, newLoc)):
                         possible_moves.append(newLoc)
-
-        return possible_moves
+                    
+            return possible_moves
