@@ -1,20 +1,21 @@
-
 from .location import Location
-
 from .pieces.game_object import GameObject
 from .pieces import Queen, Beetle, Ant, Spider, Grasshopper
 
 class QueenNotPlayedException(Exception):
-    pass
+    def __init__(self, message="The queen must be played within the first four turns."):
+        self.message = message
+        super().__init__(self.message)
 
 class Board:
-    def __init__(self, win_callback):
+    def __init__(self, win_callback, alert_callback):
         # white - black queen
         self._queen_played = [False, False]
         self._queens_reference = [None, None]
         self._objects = {}
         self._turn_number = 0
         self.win_callback = win_callback
+        self.alert_callback = alert_callback
         self._hands = {}
         self.initiate_game()
 
@@ -55,32 +56,42 @@ class Board:
             Ant: 3,
             Grasshopper: 3
         }
-    
+     
 
-
+    def add_object(self, game_object: GameObject):
+        """
+        Add a game object to the board. Validates placement rules before committing changes.
         
-
-    def add_object(self, game_object:GameObject):
-        # check if the queen is already played in the first 4 rounds
-        if not self._queen_played[0] or not self._queen_played[1]:
-            if self._turn_number > 3:
-                raise QueenNotPlayedException
-
-            elif isinstance(game_object, Queen):
-                #TODO: check if it is white or black for now both are true -- done
-                # mark true for the player who played queen
-                self._queen_played[game_object.get_team()] = True
-                self._queens_reference[game_object._team] = game_object
-        # if(self._hands[game_object.get_team()].get(game_object.__class__) > 0):
-        self._objects[(game_object.get_location())] = game_object
-        self._hands[game_object.get_team()][game_object.__class__] = self._hands[game_object.get_team()][game_object.__class__] - 1 # Decrease chosen object by one
-        
-        # number of turns that passed
-        print(self._queen_played)
-        self._turn_number += 1
-        if self._turn_number > 4:
-            self.check_win_condition()
+        Ensures that:
+        1. Queen must be played within the first 4 moves for each player
+        2. If 4 moves pass without playing the queen, the next move MUST be a queen
+        """
+        try:
+            current_team = game_object.get_team()
             
+            if not self._queen_played[current_team]:
+                team_moves = sum(1 for loc, piece in self._objects.items() if piece.get_team() == current_team)
+                
+                if team_moves >= 3 and not isinstance(game_object, Queen):
+                    raise QueenNotPlayedException(f"Player {current_team + 1} must play their queen by the 4th move")
+
+            if isinstance(game_object, Queen):
+                self._queen_played[current_team] = True
+                self._queens_reference[current_team] = game_object
+
+            self._objects[game_object.get_location()] = game_object
+            self._hands[game_object.get_team()][game_object.__class__] -= 1
+            self._turn_number += 1
+
+            if self._turn_number > 7:
+                self.check_win_condition()
+
+            return True  
+
+        except QueenNotPlayedException as e:
+            self.alert_callback(str(e)) 
+            return False
+
 
     def check_win_condition(self):
         d = [(2, 0), (-2, 0), (1, 1), (-1, 1), (1, -1), (-1, -1)]

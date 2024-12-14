@@ -64,7 +64,7 @@ class HiveGame:
 
         self.init_piece_holder()
         # create a board
-        self.board = Board(self.win_callback)
+        self.board = Board(self.win_callback, self.create_alert_window)
 
         pygame.display.set_caption("Hive Game")
 
@@ -285,3 +285,62 @@ class HiveGame:
                 hexagon_vertices(CENTER_X + x * HORIZONTAL_SPACING / 2, CENTER_Y + y * VERTICAL_SPACING, HEX_RADIUS), 3
             )
 
+    def create_alert_window(self, message):
+     
+        alert_width, alert_height = 300, 200
+        alert_x = (WIDTH - alert_width) // 2
+        alert_y = (HEIGHT - alert_height) // 2
+
+        alert_surface = pygame.Surface((alert_width, alert_height))
+        alert_surface.fill((230, 230, 230))  
+        font = pygame.font.Font(None, 28)
+        line_spacing = 5 
+
+        words = message.split(' ')
+        lines = []
+        current_line = ""
+        for word in words:
+            test_line = f"{current_line} {word}".strip()
+            test_surface = font.render(test_line, True, BLACK)
+            if test_surface.get_width() <= alert_width - 20: 
+                current_line = test_line
+            else:
+                lines.append(current_line)
+                current_line = word
+        if current_line:
+            lines.append(current_line)
+
+        text_y = 20 
+        for line in lines:
+            text_surface = font.render(line, True, BLACK)
+            text_rect = text_surface.get_rect(center=(alert_width // 2, text_y + text_surface.get_height() // 2))
+            alert_surface.blit(text_surface, text_rect)
+            text_y += text_surface.get_height() + line_spacing
+
+        button_width, button_height = 100, 50
+        button_x = (alert_width - button_width) // 2
+        button_y = alert_height - button_height - 20
+        button_rect = pygame.Rect(button_x, button_y, button_width, button_height)
+
+        button_text = font.render("Okay", True, BLACK)
+        button_text_rect = button_text.get_rect(center=button_rect.center)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return
+                
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    adjusted_pos = (mouse_pos[0] - alert_x, mouse_pos[1] - alert_y)
+                    
+                    if button_rect.collidepoint(adjusted_pos):
+                        return 
+            
+            self.screen.blit(alert_surface, (alert_x, alert_y))
+            
+            pygame.draw.rect(alert_surface, (200, 200, 200), button_rect)
+            pygame.draw.rect(alert_surface, BLACK, button_rect, 2)
+            alert_surface.blit(button_text, button_text_rect)
+            
+            pygame.display.flip()
