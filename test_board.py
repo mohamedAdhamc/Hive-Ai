@@ -88,27 +88,52 @@ def test_beetle_movement():
 
 # Sherif testing
 
-def get_moves_for_team(board):
-    # Get the team pieces using the filter function
+def get_moves_and_deploys(board):
+    combined_results = []  
+
+    if board.check_win_condition_bool():
+        print("Game Over: Winning Condition Met")
+        return combined_results  
+
+    
+    team_number = 0 if board.turn() else 1
+    print(f"Team {team_number}'s turn")
+
+    
+    available_pieces = board._hands[team_number]
+    print("Available pieces in hand:", available_pieces)
+
+    deploy_locations = board.getPossibleDeployLocations(team_number)
+    flag=1
+
+    if (board._turn_number == 7 and team_number == 0) or (board._turn_number == 8 and team_number == 1):
+        if available_pieces.get(Queen, 0) > 0:  # If Queen is still in hand
+            flag=0
+            combined_results.append(('Queen', deploy_locations))  
+            print(f"Queen is in hand. Deploy locations: {deploy_locations}")
+    
+    
+    if(flag):
+        for piece_type, count in available_pieces.items():
+            if count > 0:  
+                for _ in range(count):  
+                    combined_results.append((piece_type.__name__, deploy_locations))  
+                    print(f"Deploying {piece_type.__name__} at {deploy_locations}")
+
+
     team_pieces = board.filter_team_pieces()
-    print("team pieces:", team_pieces)
-    move_pairs = []
-    moves = {}
-    
-    # Iterate through each piece in team_pieces
-    for start_location, piece in team_pieces.items():
-        # Get possible destination locations for this piece
+
+    for piece in team_pieces:
+        start_location = piece.get_location()
         possible_destinations = piece.get_next_possible_locations(board)
-        moves[piece] = []
-        
-        # Add each destination as a pair of start and destination to the result list
+        print(f"Possible destinations for {piece}: {possible_destinations}")
+
         for destination in possible_destinations:
-            moves[piece].append(destination)
-            # move_pairs.append([start_location, destination])
-    
-        print("piece:", piece, moves[piece])
-    # return move_pairs
-    return moves
+            combined_results.append((start_location, destination))  
+
+    print("(deploys and moves):", combined_results)  
+
+    return combined_results
 
 try:
     #test_hive_broken()

@@ -30,7 +30,6 @@ class Board:
 
 
     def filter_team_pieces(self):
-        print("Turn:",self.turn())
         if(self.turn()):
             team_number=0
         else:
@@ -39,6 +38,41 @@ class Board:
         team_pieces = {location: piece for location, piece in self._objects.items() if piece.get_team() == team_number}
         return team_pieces
         
+
+    def get_moves_and_deploys(self):
+        combined_results = []
+
+        if self.check_win_condition_bool():
+            return combined_results
+
+        team_number = 0 if self.turn() else 1
+        available_pieces = self._hands[team_number]
+
+        deploy_locations = self.getPossibleDeployLocations(team_number)
+        flag=1
+
+        if (self._turn_number == 7 and team_number == 0) or (self._turn_number == 8 and team_number == 1):
+            if available_pieces.get(Queen, 0) > 0:  # If Queen is still in hand
+                flag=0
+                for location in deploy_locations:
+                    combined_results.append(('Queen', location))
+        
+        if(flag):
+            for piece_type, count in available_pieces.items():
+                if count > 0:
+                    for location in deploy_locations:
+                        combined_results.append((piece_type.__name__, location))
+
+        team_pieces = self.filter_team_pieces()
+
+        for location, piece in team_pieces.items():
+            possible_destinations = piece.get_next_possible_locations(self)
+
+            for destination in possible_destinations:
+                combined_results.append((location, destination))
+
+        return combined_results
+
     def initiate_game(self):
        
        # The initial objects in hand with each player at the beggining
@@ -112,7 +146,26 @@ class Board:
             self.win_callback(0)
             return
 
+    def check_win_condition_bool(self):
+        d = [(2, 0), (-2, 0), (1, 1), (-1, 1), (1, -1), (-1, -1)]
 
+        if self._queens_reference[0]:
+            for dx, dy in d:
+                test_location = self._queens_reference[0]._location
+                if not self.get_object(test_location.create_from_self(dx, dy)):
+                    break
+            else:
+                return 1
+
+        if self._queens_reference[1]:
+            for dx, dy in d:
+                test_location = self._queens_reference[1]._location
+                if not self.get_object(test_location.create_from_self(dx, dy)):
+                    break
+            else:
+                return -1
+        
+        return 0
 
     def get_object(self, location):
         """
@@ -135,6 +188,14 @@ class Board:
 
         if (location) not in self._objects:
             raise KeyError(f"No object found at location.")
+
+        game_object = self.get_object(location)
+
+        if isinstance(game_object, Queen):
+            self._queen_played[game_object.get_team()] = False
+            self._queens_reference[game_object._team] = None
+
+        self._hands[game_object.get_team()][game_object.__class__] += 1 # increase chosen object by one
         del self._objects[(location)]
 
     def move_object(self, oldLocation, newLocation):
@@ -149,6 +210,10 @@ class Board:
         object : GameObject = self._objects.pop((oldLocation))
 
         if isinstance(object, Beetle):
+            if object.on_top_off:
+                bottom_object = object.on_top_off.pop()
+                bottom_object.set_location(oldLocation)
+                self._objects[(oldLocation)] = bottom_object
             piece_at_location = self._objects.pop((newLocation), None)
             if piece_at_location:
                 object.put_on_top_of(piece_at_location)
@@ -287,7 +352,6 @@ class Board:
             for dx, dy in d:
                 possible_locations.add(Location(dx, dy))
 
-        #print(possible_locations)
         return possible_locations
                            
                         

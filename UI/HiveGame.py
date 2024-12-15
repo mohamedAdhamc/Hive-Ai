@@ -1,4 +1,6 @@
 import pygame
+import copy
+import time
 
 from .hex_utils import (
     calculate_hex_dimensions,
@@ -6,7 +8,10 @@ from .hex_utils import (
 )
 
 from utils.board import Board
+from utils.location import Location
 from utils.pieces import Ant, Beetle, Grasshopper, Queen, Spider
+from AI.state_tree import StateTree
+from UI.constants import *
 
 # Screen
 WIDTH, HEIGHT = 800, 600
@@ -14,6 +19,7 @@ WIDTH, HEIGHT = 800, 600
 # Colors
 BACKGROUND = (255, 255, 255)  # Background
 BLACK = (0, 0, 0)  # Black for Lines
+RED = (255, 0, 0)
 GRAY_COLOR = (90, 90, 90)
 BEIGE_COLOR = (218, 194, 165)
 CYAN_COLOR = (0, 255, 255)
@@ -49,7 +55,7 @@ def draw_hex_grid(rows, cols, hex_radius, offset_x=0, offset_y=0):
 
 
 class HiveGame:
-    def __init__(self):
+    def __init__(self, players):
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.hexagons = draw_hex_grid(HEX_GRID, HEX_GRID, HEX_RADIUS)
         self.offset_x = 0
@@ -57,14 +63,28 @@ class HiveGame:
         self.selected_piece = [None, None]
         self.hands = []
 
+        self.players = players
+        self.current_player = 0
+
         # all rect structures are for click detection
         self.pieces_rect = []
         self.possible_selections_rect = {}
         self.next_possible_locations = []
+        self.piece_to_be_moved = None
 
         self.init_piece_holder()
         # create a board
         self.board = Board(self.win_callback, self.create_alert_window)
+
+        self.human_move = [(None, None), (None, None)]
+
+        self.tree = [None, None]
+        if self.players[0] != PLAYER_TYPE_HUMAN:
+            self.tree[0] = StateTree(self.board, 2)
+            self.tree[0].build_tree(self.tree[0]._root)
+        if self.players[1] != PLAYER_TYPE_HUMAN:
+            self.tree[1] = StateTree(self.board, 2)
+            self.tree[1].build_tree(self.tree[1]._root)
 
         pygame.display.set_caption("Hive Game")
 
@@ -97,6 +117,48 @@ class HiveGame:
                 self.check_piece_hand_selection(mouse_pos)
                 self.check_piece_click(mouse_pos)
                 self.check_clicked_possible_place(mouse_pos)
+
+    def prompt_ai_for_play(self):
+        start_time = time.time()
+        for child_node in self.tree[self.current_player]._root.children:
+            try:
+                if child_node.move == self.human_move[self.current_player - 1]:
+                    child_node.move = None
+                    self.tree[self.current_player]._root = child_node
+                    break
+            except Exception:
+                pass
+        self.tree[self.current_player]._board_state._objects = copy.deepcopy(self.board._objects)
+        build_start_time = time.time()
+        self.tree[self.current_player]._leaves_count = 0
+        self.tree[self.current_player]._depth += 2
+        self.tree[self.current_player].add_level(self.tree[self.current_player]._root)
+        print("leaves count: ", self.tree[self.current_player]._leaves_count)
+        print("bulid time: ", time.time() - build_start_time)
+        # self.tree[self.current_player]._root.print_tree()
+        chosen_node = self.tree[self.current_player].get_best_move("min-max")
+        self.tree[self.current_player]._root = chosen_node
+        source, destination = chosen_node.move
+        destination_x = destination.get_x()
+        destination_y = destination.get_y()
+        if (isinstance(source, str)):
+            team = 0 if (self.board._turn_number % 2 == 0) else 1
+            if source == "Queen":
+                piece = Queen(Location(destination_x, destination_y), team)
+            elif source == "Ant":
+                piece = Ant(Location(destination_x, destination_y), team)
+            elif source == "Beetle":
+                piece = Beetle(Location(destination_x, destination_y), team)
+            elif source == "Grasshopper":
+                piece = Grasshopper(Location(destination_x, destination_y), team)
+            elif source == "Spider":
+                piece = Spider(Location(destination_x, destination_y), team)
+            Board.add_object(self.board, piece)
+        else:
+            Board.move_object(self.board, Location(source.get_x(), source.get_y()), Location(destination_x, destination_y))
+        self.current_player = self.board._turn_number % 2
+        print("total time: ", time.time() - start_time)
+
 
     def start_game_loop(self):
         global HEX_RADIUS, HEX_WIDTH, HEX_HEIGHT, VERTICAL_SPACING, HORIZONTAL_SPACING
@@ -167,7 +229,17 @@ class HiveGame:
 
             self.draw_hand()
             self._draw_hex_from_list(CYAN_COLOR, self.next_possible_locations)
-            self.check_game_events()
+
+            if self.players[self.current_player] == PLAYER_TYPE_HUMAN:
+                self.check_game_events()
+            else:
+                self.prompt_ai_for_play()
+
+            if self.piece_to_be_moved: # highlight the piece that is selected
+                pygame.draw.polygon(
+                    self.screen, RED,
+                    hexagon_vertices(CENTER_X + self.piece_to_be_moved._location.get_x() * HORIZONTAL_SPACING / 2, CENTER_Y + self.piece_to_be_moved._location.get_y() * VERTICAL_SPACING, HEX_RADIUS), 3
+                )
 
             HEX_WIDTH, HEX_HEIGHT, VERTICAL_SPACING, HORIZONTAL_SPACING = calculate_hex_dimensions(
                 HEX_RADIUS
@@ -249,6 +321,7 @@ class HiveGame:
                 piece_class, piece_index = self.selected_piece[0], self.selected_piece[1]
 
                 if piece_class:
+                    self.human_move[self.current_player] = (piece_class.__name__, location)
                     team = self.board._turn_number % 2
                     piece = piece_class(location, team)
                     self.board.add_object(piece)
@@ -256,12 +329,15 @@ class HiveGame:
                     self.selected_piece = [None, None]
                     break
                 else:
+                    self.human_move[self.current_player] = (self.piece_to_be_moved._location, location)
                     self.board.move_object(self.piece_to_be_moved._location, location)
                     self.next_possible_locations.clear()
+                    self.piece_to_be_moved = None
 
         # while clearing after every fram is not the most optimum
         # but it is the simplest and what works for now
         self.possible_selections_rect.clear()
+        self.current_player = self.board._turn_number % 2
 
 
     def check_piece_hand_selection(self, mouse_pos):
