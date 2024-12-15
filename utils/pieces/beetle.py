@@ -11,12 +11,12 @@ class Beetle(GameObject):
     def __init__(self, location, team):
         # have a reference for the object it came on top of
         # so it can be popped safely from the board
-        self.on_top_off = None
+        self.on_top_off = []
 
         super().__init__(location, team)
 
     def put_on_top_of(self, piece):
-        self.on_top_off = piece
+        self.on_top_off.append(piece)
 
     def get_next_possible_locations(self, board):
         # the beetle can move anywhere and on top of everyone

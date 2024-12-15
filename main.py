@@ -225,7 +225,7 @@ def main_menu():
 def launch():
     pygame.init()
 
-    game = HiveGame()
+    game = HiveGame([first_player, second_player])
     game.start_game_loop()
 
     pygame.quit()
