@@ -46,6 +46,8 @@ class Ant(GameObject):
             return False
 
     def get_next_possible_locations(self, board):
+        if not board._queens_reference[self._team]:
+            return []
         #TODO: Destinations that are enclosed with some patterns are not allowed,
         # these have to be checked yet
 
@@ -77,14 +79,14 @@ class Ant(GameObject):
             visited.append(piece)
 
         return list(possible_moves)
-    
+
     def getPossibleMoves(self, board):
         #TODO: Destinations that are enclosed with some patterns are not allowed,
         # these have to be checked yet
 
         possible_moves: set[Location] = set()
         x, y = self._location.get_x(), self._location.get_y()
-        
+
         full_trap = self._check_surrounding(board)
         if full_trap or self._check_trapped(board):
             return []
@@ -110,7 +112,7 @@ class Ant(GameObject):
             visited.append(piece)
 
         return list(possible_moves)
-    
+
 
     def __repr__(self):
         return f"Ant at location ({self._location.get_x()}, {self._location.get_y()})"

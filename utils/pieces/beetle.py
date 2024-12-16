@@ -19,13 +19,16 @@ class Beetle(GameObject):
         self.on_top_off.append(piece)
 
     def get_next_possible_locations(self, board):
+        if not board._queens_reference[self._team]:
+            return []
+
         # the beetle can move anywhere and on top of everyone
         possible_locations = []
         x, y = self._location.get_x(), self._location.get_y()
 
         for dx, dy in [(2, 0), (-2, 0), (1, 1), (-1, 1), (-1, -1), (1, -1)]:
             new_location = Location(x + dx, y + dy)
-            
+
             if board.check_if_hive_valid(self._location, new_location):
                 possible_locations.append(new_location)
 

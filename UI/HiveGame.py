@@ -112,17 +112,6 @@ class HiveGame:
                     self.offset_y += event.rel[1]
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
-                # Zoom in/out with mouse wheel
-                #if event.button == 4:  # Scroll Up
-                #    if HEX_RADIUS < MAX_HEX_RADIUS:
-                #        HEX_RADIUS += 5  # Increase radius
-                #elif event.button == 5:  # Scroll Down
-                #    if HEX_RADIUS > MIN_HEX_RADIUS:
-                #        HEX_RADIUS -= 5  # Decrease radius\
-
-                # clear last mouse click event
-                # self.next_possible_locations = []
-
                 self.check_piece_hand_selection(mouse_pos)
                 piece_flag = self.check_piece_click(mouse_pos)
                 self.check_clicked_possible_place(mouse_pos, piece_flag)
@@ -195,10 +184,6 @@ class HiveGame:
             self.draw_possible_deploy_locations()
             self.draw_hand()
 
-            if self.players[self.current_player] == PLAYER_TYPE_HUMAN:
-                self.check_game_events()
-            else:
-                self.prompt_ai_for_play()
 
             if self.piece_to_be_moved: # highlight the piece that is selected
                 pygame.draw.polygon(
@@ -234,6 +219,12 @@ class HiveGame:
                     hexagon_vertices(CENTER_X + correct_x, CENTER_Y + correct_y, HEX_RADIUS), 3
                 )
                 self.screen.blit(piece.sprite, (CENTER_X + correct_x - p_width / 2, CENTER_Y + correct_y - p_height / 2))
+
+
+            if self.players[self.current_player] == PLAYER_TYPE_HUMAN:
+                self.check_game_events()
+            else:
+                self.prompt_ai_for_play()
 
             self._draw_hex_from_list(CYAN_COLOR, self.next_possible_locations)
 
@@ -305,9 +296,6 @@ class HiveGame:
             # return
 
         # stop any movement if queen has not yet been played
-        if not self.board._queens_reference[self.board.turn()]:
-            return
-
         piece_flag = False
         print("pieces rect: ", self.pieces_rect)
         for piece_hex, piece in self.pieces_rect:
@@ -338,9 +326,9 @@ class HiveGame:
                     self.human_move[self.current_player] = (piece_class.__name__, location)
                     team = self.board._turn_number % 2
                     piece = piece_class(location, team)
-                    self.board.add_object(piece)
-                    self.hands[team][piece_index] = None
-                    self.selected_piece = [None, None]
+                    if self.board.add_object(piece):
+                        self.hands[team][piece_index] = None
+                        self.selected_piece = [None, None]
                     break
                 else:
                     self.human_move[self.current_player] = (self.piece_to_be_moved._location, location)
