@@ -113,9 +113,9 @@ class HiveGame:
                     self.offset_y += event.rel[1]
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
-                self.check_piece_hand_selection(mouse_pos)
+                selection_flag = self.check_piece_hand_selection(mouse_pos)
                 piece_flag = self.check_piece_click(mouse_pos)
-                self.check_clicked_possible_place(mouse_pos, piece_flag)
+                self.check_clicked_possible_place(mouse_pos, piece_flag, selection_flag)
                 # self.piece_to_be_moved = None
 
 
@@ -186,12 +186,7 @@ class HiveGame:
             self.draw_hand()
 
 
-            if self.piece_to_be_moved: # highlight the piece that is selected
-                pygame.draw.polygon(
-                    self.screen, RED,
-                    hexagon_vertices(CENTER_X + self.piece_to_be_moved._location.get_x() * HORIZONTAL_SPACING / 2, CENTER_Y + self.piece_to_be_moved._location.get_y() * VERTICAL_SPACING, HEX_RADIUS), 3
-                )
-                # self.piece_to_be_moved = None
+            
 
             for piece in self.board._objects.values():
                 x, y = piece._location.get_x(), piece._location.get_y()
@@ -220,6 +215,13 @@ class HiveGame:
                     hexagon_vertices(CENTER_X + correct_x, CENTER_Y + correct_y, HEX_RADIUS), 3
                 )
                 self.screen.blit(piece.sprite, (CENTER_X + correct_x - p_width / 2, CENTER_Y + correct_y - p_height / 2))
+            
+            if self.piece_to_be_moved: # highlight the piece that is selected
+                pygame.draw.polygon(
+                    self.screen, RED,
+                    hexagon_vertices(CENTER_X + self.piece_to_be_moved._location.get_x() * HORIZONTAL_SPACING / 2, CENTER_Y + self.piece_to_be_moved._location.get_y() * VERTICAL_SPACING, HEX_RADIUS), 3
+                )
+                # self.piece_to_be_moved = None
 
 
             if self.players[self.current_player] == PLAYER_TYPE_HUMAN:
@@ -289,7 +291,7 @@ class HiveGame:
     def draw_possible_deploy_locations(self):
         if self.selected_piece[0]:
             team = self.board._turn_number % 2
-            self._draw_hex_from_list(CYAN_COLOR, self.board.getPossibleDeployLocations(team))
+            self._draw_hex_from_list(CYAN_COLOR, self.possible_deploy_locations)
 
     def check_piece_click(self, mouse_pos):
         # stop if there is a turn currently being played
@@ -312,11 +314,13 @@ class HiveGame:
                     self.next_possible_locations = list(piece.get_next_possible_locations(self.board))
                     # self.next_possible_locations.extend(piece.get_next_possible_locations(self.board))
                     break
-
+        if(piece_flag):
+            self.possible_deploy_locations.clear()
+            self.selected_piece = [None, None]
         return piece_flag
 
 
-    def check_clicked_possible_place(self, mouse_pos, piece_flag):
+    def check_clicked_possible_place(self, mouse_pos, piece_flag, selection_flag):
         possible_new_place_flag = False
         for location, rect in self.possible_selections_rect.items():
             if rect.collidepoint(mouse_pos):
@@ -350,6 +354,10 @@ class HiveGame:
         if(possible_new_place_flag == False and not piece_flag):
             self.next_possible_locations.clear()
             self.piece_to_be_moved = None
+        
+        if(possible_new_place_flag == False and not piece_flag and not selection_flag):
+            self.selected_piece = [None, None]
+            self.possible_deploy_locations.clear()
 
 
     def check_piece_hand_selection(self, mouse_pos):
@@ -361,11 +369,14 @@ class HiveGame:
 
             if piece_rect.collidepoint(mouse_pos):
                 hand_selection_flag = True
+                self.possible_deploy_locations = self.board.getPossibleDeployLocations(team)
                 self.selected_piece = [piece, index]
 
         if(hand_selection_flag):
            self.next_possible_locations = []
            self.piece_to_be_moved = None
+           
+        return hand_selection_flag
 
     def _draw_hex_from_list(self, color, hex_list):
         for location in hex_list:
