@@ -70,7 +70,9 @@ class HiveGame:
         self.pieces_rect = []
         self.possible_selections_rect = {}
         self.next_possible_locations = []
+        self.possible_deploy_locations = []
         self.piece_to_be_moved = None
+        self.drawn_locations = []
 
         self.init_piece_holder()
         # create a board
@@ -112,11 +114,17 @@ class HiveGame:
                 #        HEX_RADIUS += 5  # Increase radius
                 #elif event.button == 5:  # Scroll Down
                 #    if HEX_RADIUS > MIN_HEX_RADIUS:
-                #        HEX_RADIUS -= 5  # Decrease radius
+                #        HEX_RADIUS -= 5  # Decrease radius\
+
+                # clear last mouse click event
+                # self.next_possible_locations = []
 
                 self.check_piece_hand_selection(mouse_pos)
-                self.check_piece_click(mouse_pos)
-                self.check_clicked_possible_place(mouse_pos)
+                piece_flag = self.check_piece_click(mouse_pos)
+                self.check_clicked_possible_place(mouse_pos, piece_flag)
+                # self.piece_to_be_moved = None
+                
+                
 
     def prompt_ai_for_play(self):
         start_time = time.time()
@@ -212,11 +220,18 @@ class HiveGame:
                 color = GRAY_COLOR if piece._team == 1 else BEIGE_COLOR
 
                 # offset will be accounted for later
-                self.pieces_rect.append((pygame.draw.polygon(
+                if(not piece.get_location() in self.drawn_locations):
+                    self.pieces_rect.append((pygame.draw.polygon(
+                        self.screen, color,
+                        hexagon_vertices(correct_x + CENTER_X, correct_y + CENTER_Y, HEX_RADIUS)
+                    ), piece))
+                    self.drawn_locations.append(piece.get_location())
+
+                pygame.draw.polygon(
                     self.screen, color,
                     hexagon_vertices(correct_x + CENTER_X, correct_y + CENTER_Y, HEX_RADIUS)
-                ), piece))
-
+                )
+                 
                 pygame.draw.polygon(
                     self.screen, BLACK,
                     hexagon_vertices(CENTER_X + correct_x, CENTER_Y + correct_y, HEX_RADIUS), 3
@@ -229,6 +244,7 @@ class HiveGame:
 
             self.draw_hand()
             self._draw_hex_from_list(CYAN_COLOR, self.next_possible_locations)
+            
 
             if self.players[self.current_player] == PLAYER_TYPE_HUMAN:
                 self.check_game_events()
@@ -240,6 +256,7 @@ class HiveGame:
                     self.screen, RED,
                     hexagon_vertices(CENTER_X + self.piece_to_be_moved._location.get_x() * HORIZONTAL_SPACING / 2, CENTER_Y + self.piece_to_be_moved._location.get_y() * VERTICAL_SPACING, HEX_RADIUS), 3
                 )
+                # self.piece_to_be_moved = None
 
             HEX_WIDTH, HEX_HEIGHT, VERTICAL_SPACING, HORIZONTAL_SPACING = calculate_hex_dimensions(
                 HEX_RADIUS
@@ -302,22 +319,32 @@ class HiveGame:
 
     def check_piece_click(self, mouse_pos):
         # stop if there is a turn currently being played
-        if self.next_possible_locations:
-            return
-
+        # if self.next_possible_locations:
+            # return
+        piece_flag = False
+        print("pieces rect: ", self.pieces_rect)
         for piece_hex, piece in self.pieces_rect:
+            # print("hex: ",piece_hex, "piece:", piece)
             if piece_hex.collidepoint(mouse_pos):
+                piece_flag = True
                 team = self.board._turn_number % 2
                 if team == piece._team:
                     # add the current location as the first element so when moving the piece
                     # it can be easily selected
+                    # update next possible locations and piece to be moved
                     self.piece_to_be_moved = piece
-                    self.next_possible_locations.extend(piece.get_next_possible_locations(self.board))
+                    self.next_possible_locations = list(piece.get_next_possible_locations(self.board))
+                    # self.next_possible_locations.extend(piece.get_next_possible_locations(self.board))
                     break
+        
+        return piece_flag
+                
 
-    def check_clicked_possible_place(self, mouse_pos):
+    def check_clicked_possible_place(self, mouse_pos, piece_flag):
+        possible_new_place_flag = False
         for location, rect in self.possible_selections_rect.items():
             if rect.collidepoint(mouse_pos):
+                possible_new_place_flag = True
                 piece_class, piece_index = self.selected_piece[0], self.selected_piece[1]
 
                 if piece_class:
@@ -338,16 +365,26 @@ class HiveGame:
         # but it is the simplest and what works for now
         self.possible_selections_rect.clear()
         self.current_player = self.board._turn_number % 2
+        
+        if(possible_new_place_flag == False and not piece_flag):
+            self.next_possible_locations.clear()
+            self.piece_to_be_moved = None
 
 
     def check_piece_hand_selection(self, mouse_pos):
         team = self.board._turn_number % 2
+        hand_selection_flag = False
         for index, (piece_rect, piece) in enumerate(zip(self.piece_rects, self.hands[team])):
             if not piece:
                 continue
 
             if piece_rect.collidepoint(mouse_pos):
+                hand_selection_flag = True
                 self.selected_piece = [piece, index]
+                
+        if(hand_selection_flag):
+           self.next_possible_locations = []
+           self.piece_to_be_moved = None
 
     def _draw_hex_from_list(self, color, hex_list):
         for location in hex_list:

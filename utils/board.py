@@ -119,6 +119,8 @@ class Board:
 
             if self._turn_number > 7:
                 self.check_win_condition()
+                
+            print("Board state: ", self._objects)
 
             return True  
 
@@ -224,6 +226,8 @@ class Board:
         self._turn_number += 1
         if self._turn_number > 4:
             self.check_win_condition()
+        
+        print("Board state:", self._objects)
 
     def check_if_hive_valid(self ,old_loc: Location, new_loc: Location):
         removed = []
