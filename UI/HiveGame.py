@@ -97,6 +97,7 @@ class HiveGame:
         self.running = False
         won = "WHITE" if team == 0 else "BLACK"
         print(f"{won} team won")
+        self.create_alert_window(f"{won} team won", 'Close')
 
     def check_game_events(self):
         global HEX_RADIUS, HEX_WIDTH, HEX_HEIGHT, VERTICAL_SPACING, HORIZONTAL_SPACING
@@ -419,7 +420,7 @@ class HiveGame:
                 hexagon_vertices(CENTER_X + x * HORIZONTAL_SPACING / 2, CENTER_Y + y * VERTICAL_SPACING, HEX_RADIUS), 3
             )
 
-    def create_alert_window(self, message):
+    def create_alert_window(self, message, btn_string):
      
         alert_width, alert_height = 300, 200
         alert_x = (WIDTH - alert_width) // 2
@@ -456,7 +457,7 @@ class HiveGame:
         button_y = alert_height - button_height - 20
         button_rect = pygame.Rect(button_x, button_y, button_width, button_height)
 
-        button_text = font.render("Okay", True, BLACK)
+        button_text = font.render(btn_string, True, BLACK)
         button_text_rect = button_text.get_rect(center=button_rect.center)
 
         while True:

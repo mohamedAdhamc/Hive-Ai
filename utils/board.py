@@ -114,7 +114,6 @@ class Board:
     def add_object(self, game_object: GameObject):
         """
         Add a game object to the board. Validates placement rules before committing changes.
-        
         Ensures that:
         1. Queen must be played within the first 4 moves for each player
         2. If 4 moves pass without playing the queen, the next move MUST be a queen
@@ -144,7 +143,7 @@ class Board:
             return True  
 
         except QueenNotPlayedException as e:
-            self.alert_callback(str(e)) 
+            self.alert_callback(str(e), 'Okay') 
             return False
 
 
