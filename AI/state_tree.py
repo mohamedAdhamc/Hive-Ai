@@ -174,19 +174,6 @@ class StateTree:
             "Spider": 2
         }
 
-        # self.play_move(("queen", (0,0)))
-        # self.play_move(("grasshopper", (-1,-1)))
-        # self.play_move(("grasshopper", (-2,-2)))
-        # self.play_move(("queen", (-1,-3)))
-        # self.play_move(("spider", (1,-1)))
-        # self.play_move(("beetle", (2,0)))
-        # self.play_move(("ant", (2,-2)))
-        # self.play_move(("spider", (3,1)))
-        # self.play_move(("spider", (2,2)))
-        # self.play_move(("spider", (0,2)))
-        # self.play_move(("beetle", (-3,-1)))
-        # self.play_move(("ant", (1,-3)))
-
         if self._board_state._turn_number < 8:
             return randint(-100, 3)
 
@@ -210,7 +197,13 @@ class StateTree:
 
         pieces_movement_score = 0
         for location, piece in list(self._board_state._objects.items()):
-            if self.difficulty == PLAYER_DIFFICULTY_HARD:
+            if self.difficulty == PLAYER_DIFFICULTY_EASY:
+                piece_value = piece_values[piece.__class__.__name__]
+                if piece._team == 0:
+                    pieces_movement_score += piece_value * self.find_distance_to_queen(location, self._board_state._queens_reference[1]._location)
+                elif piece._team == 1:
+                    pieces_movement_score -= piece_value * self.find_distance_to_queen(location, self._board_state._queens_reference[0]._location)
+            else:
                 moves = piece.get_next_possible_locations(self._board_state)
                 piece_value = piece_values[piece.__class__.__name__]
                 for move in moves:
@@ -218,12 +211,6 @@ class StateTree:
                         pieces_movement_score += piece_value * self.find_distance_to_queen(move, self._board_state._queens_reference[1]._location)
                     elif piece._team == 1:
                         pieces_movement_score -= piece_value * self.find_distance_to_queen(move, self._board_state._queens_reference[0]._location)
-            else:
-                piece_value = piece_values[piece.__class__.__name__]
-                if piece._team == 0:
-                    pieces_movement_score += piece_value * self.find_distance_to_queen(location, self._board_state._queens_reference[1]._location)
-                elif piece._team == 1:
-                    pieces_movement_score -= piece_value * self.find_distance_to_queen(location, self._board_state._queens_reference[0]._location)
 
         score = pieces_movement_score + 1000 * queen_surrounded_score
         return score

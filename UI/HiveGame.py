@@ -89,6 +89,12 @@ class HiveGame:
         self.human_move = [(None, None), (None, None)]
         self.tree = [None, None]
 
+        self.depth = [1, 1]
+        if players_diff[0] == PLAYER_DIFFICULTY_HARD:
+            self.depth[0] = 2
+        if players_diff[1] == PLAYER_DIFFICULTY_HARD:
+            self.depth[1] = 2
+
         if self.players[0] != PLAYER_TYPE_HUMAN:
             self.tree[0] = StateTree(self.board, 1, players_diff[0])
             self.tree[0].build_tree(self.tree[0]._root)
@@ -138,7 +144,7 @@ class HiveGame:
             except Exception:
                 pass
         else:
-            self.tree[self.current_player] = StateTree(self.board, 2)
+            self.tree[self.current_player] = StateTree(self.board, self.depth[self.current_player]+1)
             self.tree[self.current_player].build_tree(self.tree[self.current_player]._root)
             skip = True
 
@@ -232,14 +238,13 @@ class HiveGame:
                 )
                 self.screen.blit(piece.sprite, (CENTER_X + correct_x - p_width / 2, CENTER_Y + correct_y - p_height / 2))
 
+            self._draw_hex_from_list(CYAN_COLOR, self.next_possible_locations)
+
             if self.piece_to_be_moved: # highlight the piece that is selected
                 pygame.draw.polygon(
                     self.screen, RED,
                     hexagon_vertices(CENTER_X + self.piece_to_be_moved._location.get_x() * HORIZONTAL_SPACING / 2, CENTER_Y + self.piece_to_be_moved._location.get_y() * VERTICAL_SPACING, HEX_RADIUS), 3
                 )
-                # self.piece_to_be_moved = None
-
-            self._draw_hex_from_list(CYAN_COLOR, self.next_possible_locations)
 
             HEX_WIDTH, HEX_HEIGHT, VERTICAL_SPACING, HORIZONTAL_SPACING = calculate_hex_dimensions(
                 HEX_RADIUS
