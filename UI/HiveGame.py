@@ -140,12 +140,6 @@ class HiveGame:
             skip = True
         # self.tree[self.current_player]._root.print_tree()
 
-        self.tree[self.current_player]._board_state = Board(0, 0)
-        self.tree[self.current_player]._board_state._objects = copy.deepcopy(self.board._objects)
-        self.tree[self.current_player]._board_state._hands = copy.deepcopy(self.board._hands)
-        self.tree[self.current_player]._board_state._queens_reference = copy.deepcopy(self.board._queens_reference)
-        self.tree[self.current_player]._board_state._queen_played = copy.deepcopy(self.board._queen_played)
-        self.tree[self.current_player]._board_state._turn_number = copy.deepcopy(self.board._turn_number)
         if not skip:
             # build_start_time = time.time()
             self.tree[self.current_player]._leaves_count = 0
@@ -201,38 +195,17 @@ class HiveGame:
                 )
                 # self.piece_to_be_moved = None
 
-            for piece in self.board._objects.values():
-                x, y = piece._location.get_x(), piece._location.get_y()
-                correct_x = x * HORIZONTAL_SPACING / 2
-                correct_y = y * VERTICAL_SPACING
-
-                p_width, p_height = piece.sprite.get_width(), piece.sprite.get_height()
-                color = GRAY_COLOR if piece._team == 1 else BEIGE_COLOR
-
-                # offset will be accounted for later
-                # self.pieces_rect.clear()
-                if(not piece.get_location() in self.drawn_locations):
-                    self.pieces_rect.append((pygame.draw.polygon(
-                        self.screen, color,
-                        hexagon_vertices(correct_x + CENTER_X, correct_y + CENTER_Y, HEX_RADIUS)
-                    ), piece))
-                    self.drawn_locations.append(piece.get_location())
-
-                pygame.draw.polygon(
-                    self.screen, color,
-                    hexagon_vertices(correct_x + CENTER_X, correct_y + CENTER_Y, HEX_RADIUS)
-                )
-
-                pygame.draw.polygon(
-                    self.screen, BLACK,
-                    hexagon_vertices(CENTER_X + correct_x, CENTER_Y + correct_y, HEX_RADIUS), 3
-                )
-                self.screen.blit(piece.sprite, (CENTER_X + correct_x - p_width / 2, CENTER_Y + correct_y - p_height / 2))
+            if self.ai_running:
+                print("drawing  copy")
+                self.draw_pieces(self.map_copy.values())
+            else:
+                self.draw_pieces(self.board._objects.values())
 
 
             if self.players[self.current_player] == PLAYER_TYPE_HUMAN:
                 self.check_game_events()
             elif not self.ai_running:
+                self.map_copy = copy.deepcopy(self.board._objects)
                 self.ai_running = True
                 # self.prompt_ai_for_play()
                 ai_thread = threading.Thread(target=self.prompt_ai_for_play)
@@ -252,6 +225,36 @@ class HiveGame:
             self.screen.blit(text_surface, text_rect)
 
             pygame.display.flip()
+
+    def draw_pieces(self, pieces_list):
+        for piece in pieces_list:
+            x, y = piece._location.get_x(), piece._location.get_y()
+            correct_x = x * HORIZONTAL_SPACING / 2
+            correct_y = y * VERTICAL_SPACING
+
+            p_width, p_height = piece.sprite.get_width(), piece.sprite.get_height()
+            color = GRAY_COLOR if piece._team == 1 else BEIGE_COLOR
+
+            # offset will be accounted for later
+            # self.pieces_rect.clear()
+            if(not piece.get_location() in self.drawn_locations):
+                self.pieces_rect.append((pygame.draw.polygon(
+                    self.screen, color,
+                    hexagon_vertices(correct_x + CENTER_X, correct_y + CENTER_Y, HEX_RADIUS)
+                ), piece))
+                self.drawn_locations.append(piece.get_location())
+
+            pygame.draw.polygon(
+                self.screen, color,
+                hexagon_vertices(correct_x + CENTER_X, correct_y + CENTER_Y, HEX_RADIUS)
+            )
+
+            pygame.draw.polygon(
+                self.screen, BLACK,
+                hexagon_vertices(CENTER_X + correct_x, CENTER_Y + correct_y, HEX_RADIUS), 3
+            )
+            self.screen.blit(piece.sprite, (CENTER_X + correct_x - p_width / 2, CENTER_Y + correct_y - p_height / 2))
+
 
     def init_piece_holder(self):
         # two times one for yellow team one for black team and it has to
