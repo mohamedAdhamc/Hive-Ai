@@ -106,7 +106,7 @@ def mode_menu(player_num):
         ALPHABETA_BUTTON = Button(image=pygame.image.load("assets/Rect.png"), pos=(400, 380), 
                             text_input="Alpha-Beta", font=get_font(65), base_color="#d7fcd4", hovering_color="White")
         ITERATIVE_BUTTON = Button(image=pygame.image.load("assets/Rect.png"), pos=(400, 510), 
-                            text_input="Iterative Deppending", font=get_font(65), base_color="#d7fcd4", hovering_color="White")
+                            text_input="Iterative Deepening", font=get_font(65), base_color="#d7fcd4", hovering_color="White")
 
         SCREEN.blit(MENU_TEXT, MENU_RECT)
 
