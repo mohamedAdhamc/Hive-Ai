@@ -29,6 +29,10 @@ class Grasshopper(GameObject):
             x = loc.get_x()
             y = loc.get_y()
             
+            # check if object can leave its initial position
+            if(not board.checkIfvalid(loc, None)):
+                return []
+            
             d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
             for (dx,dy) in d:
                 newLoc: Location = Location(x+dx,y+dy)

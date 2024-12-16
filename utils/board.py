@@ -120,7 +120,7 @@ class Board:
             if self._turn_number > 7:
                 self.check_win_condition()
                 
-            print("Board state: ", self._objects)
+            # print("Board state: ", self._objects)
 
             return True  
 
@@ -227,7 +227,8 @@ class Board:
         if self._turn_number > 4:
             self.check_win_condition()
         
-        print("Board state:", self._objects)
+        # print(object.__class__.__name__," was moved to ", newLocation)
+        # print("Board state:", self._objects)
 
     def check_if_hive_valid(self ,old_loc: Location, new_loc: Location):
         removed = []
@@ -257,7 +258,7 @@ class Board:
         """
         return "\n".join([f"Position {pos}: {obj}" for pos, obj in self._objects.items()])
 
-    def checkIfvalid(self, oldLoc: Location, newLoc: Location):
+    def checkIfvalid(self, oldLoc: Location, newLoc):
         """
         Checks if the hive is still connected after every move.
         Args:
@@ -266,13 +267,16 @@ class Board:
         Returns:
             bool: True if the hive is still connected, False otherwise.
         """
+        
         newBoard = dict(self._objects)
-        del newBoard[(oldLoc)]
-        newBoard[newLoc] = 1
+        del newBoard[oldLoc]
         visited = []
 
         # test neighbours
         def checkHive(loc: Location, prev:Location):
+            # if(loc in visited):
+            #     return
+            # del newBoard[(loc)]
             visited.append(loc)
             curr_x = loc.get_x()
             curr_y = loc.get_y()
@@ -284,15 +288,33 @@ class Board:
                 if newBoard.get((current_search_loc),None) is not None:
                     checkHive(current_search_loc, loc)
             
-            del newBoard[(loc)]
+            if(loc in newBoard):
+                del newBoard[(loc)]
 
-
-        checkHive(newLoc,oldLoc)
+        
+        # Check if the ibject can leave its initial position
+        if(newLoc is None):
+            curr_x = oldLoc.get_x()
+            curr_y = oldLoc.get_y()
+            d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
+            for (dx,dy) in d:
+                # search hive starting from first sibling
+                curr: Location = Location(curr_x+dx, curr_y+dy)
+                if newBoard.get((curr),None) is not None:
+                    checkHive(curr,curr)
+                    if(len(newBoard) == 0):
+                        return True
+                    else:
+                        return False
+        
+        checkHive(newLoc,newLoc)
         if(len(newBoard) == 0):
             return True
         else:
             return False
 
+    def canLeavePos(self, loc: Location):
+        pass
         
     
     def isSurroundedBySix(self,loc: Location):

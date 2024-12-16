@@ -93,7 +93,7 @@ class HiveGame:
     def win_callback(self, team):
         self.running = False
         won = "WHITE" if team == 0 else "BLACK"
-        print(f"{won} team won")
+        # print(f"{won} team won")
 
     def check_game_events(self):
         global HEX_RADIUS, HEX_WIDTH, HEX_HEIGHT, VERTICAL_SPACING, HORIZONTAL_SPACING
@@ -141,8 +141,8 @@ class HiveGame:
         self.tree[self.current_player]._leaves_count = 0
         self.tree[self.current_player]._depth += 2
         self.tree[self.current_player].add_level(self.tree[self.current_player]._root)
-        print("leaves count: ", self.tree[self.current_player]._leaves_count)
-        print("bulid time: ", time.time() - build_start_time)
+        # print("leaves count: ", self.tree[self.current_player]._leaves_count)
+        # print("bulid time: ", time.time() - build_start_time)
         # self.tree[self.current_player]._root.print_tree()
         chosen_node = self.tree[self.current_player].get_best_move("min-max")
         self.tree[self.current_player]._root = chosen_node
@@ -165,7 +165,7 @@ class HiveGame:
         else:
             Board.move_object(self.board, Location(source.get_x(), source.get_y()), Location(destination_x, destination_y))
         self.current_player = self.board._turn_number % 2
-        print("total time: ", time.time() - start_time)
+        # print("total time: ", time.time() - start_time)
 
 
     def start_game_loop(self):
@@ -199,7 +199,7 @@ class HiveGame:
             #            # Fill with stored color in state
             #            pygame.draw.polygon(self.screen, hex_states[hex_key], hexagon)
             #            pygame.draw.polygon(self.screen, BLACK, hexagon, 2)  # Black outline
-            #            print(f"Hexagon clicked at ({row}, {col})")
+                    #    print(f"Hexagon clicked at ({row}, {col})")
             #            clicked_this_frame = True  # processed
             #    else:
             #        # Draw the hexagon with its current state (color)
@@ -323,13 +323,13 @@ class HiveGame:
         # if self.next_possible_locations:
             # return
         piece_flag = False
-        print("pieces rect: ", self.pieces_rect)
+        # print("pieces rect: ", self.pieces_rect)
         for piece_hex, piece in self.pieces_rect:
             # print("hex: ",piece_hex, "piece:", piece)
             if piece_hex.collidepoint(mouse_pos):
                 piece_flag = True
                 team = self.board._turn_number % 2
-                if team == piece._team:
+                if (team == piece._team and not isinstance(self.piece_to_be_moved, Beetle)):
                     # add the current location as the first element so when moving the piece
                     # it can be easily selected
                     # update next possible locations and piece to be moved
@@ -363,7 +363,7 @@ class HiveGame:
                     self.next_possible_locations.clear()
                     # clear the pieces rect
                     self.pieces_rect.clear()
-                    print("Old location:", old_location)
+                    # print("Old location:", old_location)
                     self.drawn_locations.clear()
                     self.piece_to_be_moved = None
 
