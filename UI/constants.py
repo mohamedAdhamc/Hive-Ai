@@ -26,15 +26,15 @@ class Colors:
     BOARD = (0, 145, 100)
 
 
-PLAYER_TYPE_HUMAN = "human"
-PLAYER_TYPE_AI = "ai"
-AI_MODE_MINMAX = "minmax"
-AI_MODE_ALPHA_BETA = "alphabeta"
-AI_MODE_ITERATIVE = "iterative"
+PLAYER_TYPE_HUMAN = "Human"
+PLAYER_TYPE_AI = "AI"
+AI_MODE_MINMAX = "Min-Max"
+AI_MODE_ALPHA_BETA = "Alpha-Beta"
+AI_MODE_ITERATIVE = "Iterative"
 
-PLAYER_DIFFICULTY_EASY = 1
-PLAYER_DIFFICULTY_MEDIUM = 10
-PLAYER_DIFFICULTY_HARD = 30
+PLAYER_DIFFICULTY_EASY = "Easy"
+PLAYER_DIFFICULTY_MEDIUM = "Medium"
+PLAYER_DIFFICULTY_HARD = "Hard"
 
 def get_font(size):
     return pygame.font.Font(None, size)

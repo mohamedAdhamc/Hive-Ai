@@ -69,6 +69,9 @@ class HiveGame:
         self.players_modes = players_modes
         self.players_diff = players_diff
         self.current_player = 0
+        self.players_text = ["", ""]
+        self.players_text[0] = "Human" if self.players[0] == PLAYER_TYPE_HUMAN else f"{self.players_modes[0]} AI - {self.players_diff[0]}"
+        self.players_text[1] = "Human" if self.players[1] == PLAYER_TYPE_HUMAN else f"{self.players_modes[1]} AI - {self.players_diff[1]}"
 
         # all rect structures are for click detection
         self.pieces_rect = []
@@ -87,10 +90,10 @@ class HiveGame:
         self.tree = [None, None]
 
         if self.players[0] != PLAYER_TYPE_HUMAN:
-            self.tree[0] = StateTree(self.board, 1)
+            self.tree[0] = StateTree(self.board, 1, players_diff[0])
             self.tree[0].build_tree(self.tree[0]._root)
         if self.players[1] != PLAYER_TYPE_HUMAN:
-            self.tree[1] = StateTree(self.board, 1)
+            self.tree[1] = StateTree(self.board, 1, players_diff[1])
             self.tree[1].build_tree(self.tree[1]._root)
 
         self.background_image = pygame.image.load(os.path.join("assets", "background_game.png"))
@@ -139,13 +142,12 @@ class HiveGame:
             self.tree[self.current_player].build_tree(self.tree[self.current_player]._root)
             skip = True
 
-        self.tree[self.current_player]._board_state._objects = copy.deepcopy(self.board._objects)
         if not skip:
             self.tree[self.current_player]._leaves_count = 0
             self.tree[self.current_player]._depth += 2
             self.tree[self.current_player].add_level(self.tree[self.current_player]._root)
 
-        chosen_node = self.tree[self.current_player].get_best_move(self.players_modes[self.current_player], self.players_diff[self.current_player], self.current_player == 0)
+        chosen_node = self.tree[self.current_player].get_best_move(self.players_modes[self.current_player], self.current_player == 0)
 
         self.tree[self.current_player]._root = chosen_node
         source, destination = chosen_node.move
@@ -243,17 +245,28 @@ class HiveGame:
                 HEX_RADIUS
             )
 
-            player_color = "White" if self.current_player == 0 else "Black"
-            turn_text = f"Current Turn: {player_color}"
             font = pygame.font.SysFont(None, 36)
-            text_surface = font.render(turn_text, True, (0, 0, 0))
+            player_color = "White" if self.current_player == 0 else "Black"
+            text_surface = font.render(f"Current Turn: {player_color}", True, (0, 0, 0))
             text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, 20))  # 20 pixels from the top
             self.screen.blit(text_surface, text_rect)
 
+            text_surface = font.render("White Player:", True, (0, 0, 0))
+            text_rect = text_surface.get_rect(center=(self.screen.get_width() - 150, 150))  # 20 pixels from the top
+            self.screen.blit(text_surface, text_rect)
+            text_surface = font.render(self.players_text[0], True, (0, 0, 0))
+            text_rect = text_surface.get_rect(center=(self.screen.get_width() - 150, 180))  # 20 pixels from the top
+            self.screen.blit(text_surface, text_rect)
+
+            text_surface = font.render("Black Player:", True, (0, 0, 0))
+            text_rect = text_surface.get_rect(center=(self.screen.get_width() - 150, 350))  # 20 pixels from the top
+            self.screen.blit(text_surface, text_rect)
+            text_surface = font.render(self.players_text[1], True, (0, 0, 0))
+            text_rect = text_surface.get_rect(center=(self.screen.get_width() - 150, 380))  # 20 pixels from the top
+            self.screen.blit(text_surface, text_rect)
+
             if self.won:
-                turn_text = f"{self.won} team won"
-                font = pygame.font.SysFont(None, 36)
-                text_surface = font.render(turn_text, True, (0, 0, 0))
+                text_surface = font.render(f"{self.won} team won", True, (0, 0, 0))
                 text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, 60))  # 20 pixels from the top
                 self.screen.blit(text_surface, text_rect)
 

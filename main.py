@@ -49,7 +49,7 @@ def difficulty_menu(player_num):
                         first_player_diff = PLAYER_DIFFICULTY_EASY
                         pygame.mixer.music.load('assets/menu-sound.mp3')
                         pygame.mixer.music.play(1)
-                        mode_menu(2)
+                        player_menu(2)
                         return
                     else:
                         second_player_diff = PLAYER_DIFFICULTY_EASY
@@ -66,7 +66,7 @@ def difficulty_menu(player_num):
                         first_player_diff = PLAYER_DIFFICULTY_MEDIUM
                         pygame.mixer.music.load('assets/menu-sound.mp3')
                         pygame.mixer.music.play(1)
-                        mode_menu(2)
+                        player_menu(2)
                         return
                     else:
                         second_player_diff = PLAYER_DIFFICULTY_MEDIUM
@@ -80,7 +80,7 @@ def difficulty_menu(player_num):
                         first_player_diff = PLAYER_DIFFICULTY_HARD
                         pygame.mixer.music.load('assets/menu-sound.mp3')
                         pygame.mixer.music.play(1)
-                        mode_menu(2)
+                        player_menu(2)
                         return
                     else:
                         second_player_diff = PLAYER_DIFFICULTY_HARD
@@ -130,13 +130,13 @@ def mode_menu(player_num):
                         first_player_mode = AI_MODE_MINMAX
                         pygame.mixer.music.load('assets/menu-sound.mp3')
                         pygame.mixer.music.play(1)
-                        player_menu(2)
+                        difficulty_menu(1)
                         return
                     else:
                         second_player_mode = AI_MODE_MINMAX
                         pygame.mixer.music.load('assets/menu-sound.mp3')
                         pygame.mixer.music.play(1)
-                        launch()
+                        difficulty_menu(2)
                         return
                 #options button click
                 if ALPHABETA_BUTTON.checkForInput(MENU_MOUSE_POS):
@@ -144,13 +144,13 @@ def mode_menu(player_num):
                         first_player_mode = AI_MODE_ALPHA_BETA
                         pygame.mixer.music.load('assets/menu-sound.mp3')
                         pygame.mixer.music.play(1)
-                        player_menu(2)
+                        difficulty_menu(1)
                         return
                     else:
                         second_player_mode = AI_MODE_ALPHA_BETA
                         pygame.mixer.music.load('assets/board-start.mp3')
                         pygame.mixer.music.play(1)
-                        launch()
+                        difficulty_menu(2)
                         return
                 #quit button click
                 if ITERATIVE_BUTTON.checkForInput(MENU_MOUSE_POS):

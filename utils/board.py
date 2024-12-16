@@ -151,7 +151,7 @@ class Board:
         d = [(2, 0), (-2, 0), (1, 1), (-1, 1), (1, -1), (-1, -1)]
 
         for dx, dy in d:
-            test_location = self._queens_reference[0]._location
+            test_location = self._queens_reference[0].get_location()
             if not self.get_object(test_location.create_from_self(dx, dy)):
                 break
         else:
@@ -159,7 +159,7 @@ class Board:
             return
 
         for dx, dy in d:
-            test_location = self._queens_reference[1]._location
+            test_location = self._queens_reference[1].get_location()
             if not self.get_object(test_location.create_from_self(dx, dy)):
                 break
         else:
@@ -171,19 +171,19 @@ class Board:
 
         if self._queens_reference[0]:
             for dx, dy in d:
-                test_location = self._queens_reference[0]._location
-                if not self.get_object(test_location.create_from_self(dx, dy)):
-                    break
-            else:
-                return 1
-
-        if self._queens_reference[1]:
-            for dx, dy in d:
-                test_location = self._queens_reference[1]._location
+                test_location = self._queens_reference[0].get_location()
                 if not self.get_object(test_location.create_from_self(dx, dy)):
                     break
             else:
                 return -1
+
+        if self._queens_reference[1]:
+            for dx, dy in d:
+                test_location = self._queens_reference[1].get_location()
+                if not self.get_object(test_location.create_from_self(dx, dy)):
+                    break
+            else:
+                return 1
         
         return 0
 

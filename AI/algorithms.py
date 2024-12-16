@@ -56,7 +56,7 @@ def iterative_depening(max_time, max_min, tree):
     result = None
     depth= 1
     while(True):
-        result = apply_alphabeta(depth, max_min, tree._root)
+        result = apply_alphabeta(tree._depth, max_min, tree._root)
         if (time.time() - start_time) >= max_time:
             break
         depth = depth + 1

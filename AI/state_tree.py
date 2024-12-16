@@ -12,11 +12,17 @@ from random import randint
 
 class StateTree:
 
-    def __init__(self, _board_state, _depth):
+    def __init__(self, _board_state, _depth, difficulty = PLAYER_DIFFICULTY_EASY):
         self._board_state = _board_state
         self._depth = _depth
         self._root = StateTreeNode()
         self._leaves_count = 0
+        self.difficulty = difficulty
+        self.time = 1
+        if self.difficulty == PLAYER_DIFFICULTY_MEDIUM:
+            self.time = 5
+        elif self.difficulty == PLAYER_DIFFICULTY_HARD:
+            self.time = 10
 
     def build_tree(self, node):
         if node.move:
@@ -184,6 +190,12 @@ class StateTree:
         if self._board_state._turn_number < 8:
             return randint(-100, 3)
 
+        win_condition = self._board_state.check_win_condition_bool()
+        if win_condition == 1:
+            return float('inf')
+        elif win_condition == -1:
+            return float('-inf')
+
         queen_surrounded_score = 0
         d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
         i = -1
@@ -198,13 +210,20 @@ class StateTree:
 
         pieces_movement_score = 0
         for location, piece in list(self._board_state._objects.items()):
-            # moves = piece.get_next_possible_locations(self._board_state)
-            piece_value = piece_values[piece.__class__.__name__]
-            # for move in moves:
-            if piece._team == 0:
-                pieces_movement_score += piece_value * self.find_distance_to_queen(location, self._board_state._queens_reference[1]._location)
-            elif piece._team == 1:
-                pieces_movement_score -= piece_value * self.find_distance_to_queen(location, self._board_state._queens_reference[0]._location)
+            if self.difficulty == PLAYER_DIFFICULTY_HARD:
+                moves = piece.get_next_possible_locations(self._board_state)
+                piece_value = piece_values[piece.__class__.__name__]
+                for move in moves:
+                    if piece._team == 0:
+                        pieces_movement_score += piece_value * self.find_distance_to_queen(move, self._board_state._queens_reference[1]._location)
+                    elif piece._team == 1:
+                        pieces_movement_score -= piece_value * self.find_distance_to_queen(move, self._board_state._queens_reference[0]._location)
+            else:
+                piece_value = piece_values[piece.__class__.__name__]
+                if piece._team == 0:
+                    pieces_movement_score += piece_value * self.find_distance_to_queen(location, self._board_state._queens_reference[1]._location)
+                elif piece._team == 1:
+                    pieces_movement_score -= piece_value * self.find_distance_to_queen(location, self._board_state._queens_reference[0]._location)
 
         score = pieces_movement_score + 1000 * queen_surrounded_score
         return score
@@ -224,13 +243,13 @@ class StateTree:
         return []
 
 
-    def get_best_move(self, algorithm_type, time = 0, max_min = True):
+    def get_best_move(self, algorithm_type, max_min = True):
         if algorithm_type == AI_MODE_MINMAX:
             result = apply_minmax(self._depth, max_min, self._root)
         elif algorithm_type == AI_MODE_ALPHA_BETA:
             result = apply_alphabeta(self._depth, max_min, self._root)
         elif algorithm_type == AI_MODE_ITERATIVE:
-            result = iterative_depening(time, max_min, self)
+            result = iterative_depening(self.time, max_min, self)
         for child in self._root.children:
             if result == child.evaluation:
                 return child
