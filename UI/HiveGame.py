@@ -220,6 +220,7 @@ class HiveGame:
                 color = GRAY_COLOR if piece._team == 1 else BEIGE_COLOR
 
                 # offset will be accounted for later
+                # self.pieces_rect.clear()
                 if(not piece.get_location() in self.drawn_locations):
                     self.pieces_rect.append((pygame.draw.polygon(
                         self.screen, color,
@@ -346,7 +347,7 @@ class HiveGame:
             if rect.collidepoint(mouse_pos):
                 possible_new_place_flag = True
                 piece_class, piece_index = self.selected_piece[0], self.selected_piece[1]
-
+                
                 if piece_class:
                     self.human_move[self.current_player] = (piece_class.__name__, location)
                     team = self.board._turn_number % 2
@@ -357,8 +358,13 @@ class HiveGame:
                     break
                 else:
                     self.human_move[self.current_player] = (self.piece_to_be_moved._location, location)
+                    old_location = self.piece_to_be_moved.get_location()
                     self.board.move_object(self.piece_to_be_moved._location, location)
                     self.next_possible_locations.clear()
+                    # clear the pieces rect
+                    self.pieces_rect.clear()
+                    print("Old location:", old_location)
+                    self.drawn_locations.clear()
                     self.piece_to_be_moved = None
 
         # while clearing after every fram is not the most optimum
