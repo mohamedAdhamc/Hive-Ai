@@ -19,6 +19,9 @@ class Beetle(GameObject):
         self.on_top_off.append(piece)
 
     def get_next_possible_locations(self, board):
+        if not board._queens_reference[self._team]:
+            return []
+
         # the beetle can move anywhere and on top of everyone
         possible_locations = []
         loc: Location = self.get_location()
@@ -45,5 +48,6 @@ class Beetle(GameObject):
             else: 
                 if(board.checkIfvalid(self._location, new_location)):
                     possible_locations.append(new_location)
+
 
         return possible_locations

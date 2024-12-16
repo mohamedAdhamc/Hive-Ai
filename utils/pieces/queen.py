@@ -20,6 +20,9 @@ class Queen(GameObject):
     #     return f"Queen at {self.get_location()}"
 
     def get_next_possible_locations(self, board):
+        if not board._queens_reference[self._team]:
+            return []
+
         possible_moves = []
         loc: Location = self.get_location()
         x = loc.get_x()
@@ -28,7 +31,7 @@ class Queen(GameObject):
         # check if object can leave its initial position
         if(not board.checkIfvalid(loc, None)):
             return []
-        
+
         d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
         for (dx,dy) in d:
             newLoc: Location = Location(x+dx,y+dy)
@@ -37,5 +40,5 @@ class Queen(GameObject):
                 if(not board.isNarrowPath(loc, newLoc)): # Check if the path is not narrow
                     if(board.checkIfvalid(loc,newLoc)): # check if game is not ruined (Check if the hive is still connected)
                         possible_moves.append(newLoc)
-                    
+
         return possible_moves

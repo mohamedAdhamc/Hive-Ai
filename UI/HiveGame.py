@@ -14,7 +14,7 @@ from AI.state_tree import StateTree
 from UI.constants import *
 
 # Screen
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1200, 800
 
 # Colors
 BACKGROUND = (255, 255, 255)  # Background
@@ -55,7 +55,7 @@ def draw_hex_grid(rows, cols, hex_radius, offset_x=0, offset_y=0):
 
 
 class HiveGame:
-    def __init__(self, players):
+    def __init__(self, players, players_modes, players_diff):
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.hexagons = draw_hex_grid(HEX_GRID, HEX_GRID, HEX_RADIUS)
         self.offset_x = 0
@@ -64,6 +64,8 @@ class HiveGame:
         self.hands = []
 
         self.players = players
+        self.players_modes = players_modes
+        self.players_diff = players_diff
         self.current_player = 0
 
         # all rect structures are for click detection
@@ -75,17 +77,18 @@ class HiveGame:
         self.drawn_locations = []
 
         self.init_piece_holder()
+
         # create a board
         self.board = Board(self.win_callback, self.create_alert_window)
 
         self.human_move = [(None, None), (None, None)]
-
         self.tree = [None, None]
+
         if self.players[0] != PLAYER_TYPE_HUMAN:
-            self.tree[0] = StateTree(self.board, 2)
+            self.tree[0] = StateTree(self.board, 1)
             self.tree[0].build_tree(self.tree[0]._root)
         if self.players[1] != PLAYER_TYPE_HUMAN:
-            self.tree[1] = StateTree(self.board, 2)
+            self.tree[1] = StateTree(self.board, 1)
             self.tree[1].build_tree(self.tree[1]._root)
 
         pygame.display.set_caption("Hive Game")
@@ -93,7 +96,9 @@ class HiveGame:
     def win_callback(self, team):
         self.running = False
         won = "WHITE" if team == 0 else "BLACK"
-        # print(f"{won} team won")
+
+        print(f"{won} team won")
+        self.create_alert_window(f"{won} team won", 'Close')
 
     def check_game_events(self):
         global HEX_RADIUS, HEX_WIDTH, HEX_HEIGHT, VERTICAL_SPACING, HORIZONTAL_SPACING
@@ -108,26 +113,16 @@ class HiveGame:
                     self.offset_y += event.rel[1]
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
-                # Zoom in/out with mouse wheel
-                #if event.button == 4:  # Scroll Up
-                #    if HEX_RADIUS < MAX_HEX_RADIUS:
-                #        HEX_RADIUS += 5  # Increase radius
-                #elif event.button == 5:  # Scroll Down
-                #    if HEX_RADIUS > MIN_HEX_RADIUS:
-                #        HEX_RADIUS -= 5  # Decrease radius\
-
-                # clear last mouse click event
-                # self.next_possible_locations = []
-
                 self.check_piece_hand_selection(mouse_pos)
                 piece_flag = self.check_piece_click(mouse_pos)
                 self.check_clicked_possible_place(mouse_pos, piece_flag)
                 # self.piece_to_be_moved = None
-                
-                
+
+
 
     def prompt_ai_for_play(self):
         start_time = time.time()
+        skip = False
         for child_node in self.tree[self.current_player]._root.children:
             try:
                 if child_node.move == self.human_move[self.current_player - 1]:
@@ -136,19 +131,32 @@ class HiveGame:
                     break
             except Exception:
                 pass
-        self.tree[self.current_player]._board_state._objects = copy.deepcopy(self.board._objects)
-        build_start_time = time.time()
-        self.tree[self.current_player]._leaves_count = 0
-        self.tree[self.current_player]._depth += 2
-        self.tree[self.current_player].add_level(self.tree[self.current_player]._root)
-        # print("leaves count: ", self.tree[self.current_player]._leaves_count)
-        # print("bulid time: ", time.time() - build_start_time)
+        else:
+            build_start_time = time.time()
+            self.tree[self.current_player] = StateTree(self.board, 2)
+            self.tree[self.current_player].build_tree(self.tree[self.current_player]._root)
+            skip = True
         # self.tree[self.current_player]._root.print_tree()
-        chosen_node = self.tree[self.current_player].get_best_move("min-max")
+
+        self.tree[self.current_player]._board_state._objects = copy.deepcopy(self.board._objects)
+        if not skip:
+            build_start_time = time.time()
+            self.tree[self.current_player]._leaves_count = 0
+            self.tree[self.current_player]._depth += 2
+            self.tree[self.current_player].add_level(self.tree[self.current_player]._root)
+
+        print("leaves count: ", self.tree[self.current_player]._leaves_count)
+        print("bulid time: ", time.time() - build_start_time)
+
+        chosen_node = self.tree[self.current_player].get_best_move(self.players_modes[self.current_player], self.players_diff[self.current_player], self.current_player == 0)
+
         self.tree[self.current_player]._root = chosen_node
         source, destination = chosen_node.move
         destination_x = destination.get_x()
         destination_y = destination.get_y()
+
+        # the ai is thinking
+        time.sleep(1)
         if (isinstance(source, str)):
             team = 0 if (self.board._turn_number % 2 == 0) else 1
             if source == "Queen":
@@ -172,45 +180,19 @@ class HiveGame:
         global HEX_RADIUS, HEX_WIDTH, HEX_HEIGHT, VERTICAL_SPACING, HORIZONTAL_SPACING
 
         self.running = True
-        #hex_states = {}
-
-        #clicked_this_frame = False  # Flag to track if click is processed yet
         while self.running:
             self.screen.fill(BACKGROUND)
-            # Mouse
-            #mouse_pos = pygame.mouse.get_pos()
-            #mouse_pressed = pygame.mouse.get_pressed()
             self.draw_possible_deploy_locations()
+            self.draw_hand()
 
 
+            if self.piece_to_be_moved: # highlight the piece that is selected
+                pygame.draw.polygon(
+                    self.screen, RED,
+                    hexagon_vertices(CENTER_X + self.piece_to_be_moved._location.get_x() * HORIZONTAL_SPACING / 2, CENTER_Y + self.piece_to_be_moved._location.get_y() * VERTICAL_SPACING, HEX_RADIUS), 3
+                )
+                # self.piece_to_be_moved = None
 
-            # Hovering and clicking
-            #for hexagon, (row, col) in self.hexagons:
-            #    hex_key = (row, col)  # Use grid indices
-            #    if point_in_hexagon(mouse_pos[0], mouse_pos[1], hexagon):
-            #        # Highlight on hovering
-            #        pygame.draw.polygon(self.screen, HOVER_COLOR, hexagon)
-            #        pygame.draw.polygon(self.screen, BLACK, hexagon, 2)  # Black outline
-            #        # Left mouse click and not processed yet
-            #        if mouse_pressed[0] and not clicked_this_frame:
-            #            # If it was not clicked before, color it and store the state
-            #            if hex_key not in hex_states:
-            #                hex_states[hex_key] = CLICK_COLOR  # red
-            #            # Fill with stored color in state
-            #            pygame.draw.polygon(self.screen, hex_states[hex_key], hexagon)
-            #            pygame.draw.polygon(self.screen, BLACK, hexagon, 2)  # Black outline
-                    #    print(f"Hexagon clicked at ({row}, {col})")
-            #            clicked_this_frame = True  # processed
-            #    else:
-            #        # Draw the hexagon with its current state (color)
-            #        if hex_key in hex_states:
-            #            # Use the stored colors
-            #            pygame.draw.polygon(self.screen, hex_states[hex_key], hexagon)
-            #        else:
-            #            # Default white color
-            #            pygame.draw.polygon(self.screen, BACKGROUND, hexagon)
-            #        pygame.draw.polygon(self.screen, BLACK, hexagon, 2)  # Black outline
-            
             for piece in self.board._objects.values():
                 x, y = piece._location.get_x(), piece._location.get_y()
                 correct_x = x * HORIZONTAL_SPACING / 2
@@ -232,41 +214,32 @@ class HiveGame:
                     self.screen, color,
                     hexagon_vertices(correct_x + CENTER_X, correct_y + CENTER_Y, HEX_RADIUS)
                 )
-                 
+
                 pygame.draw.polygon(
                     self.screen, BLACK,
                     hexagon_vertices(CENTER_X + correct_x, CENTER_Y + correct_y, HEX_RADIUS), 3
                 )
                 self.screen.blit(piece.sprite, (CENTER_X + correct_x - p_width / 2, CENTER_Y + correct_y - p_height / 2))
-                
 
-            #if not mouse_pressed[0]:
-            #    clicked_this_frame = False        # Recalculate hexagon dimensions
-
-            self.draw_hand()
-            self._draw_hex_from_list(CYAN_COLOR, self.next_possible_locations)
-            
 
             if self.players[self.current_player] == PLAYER_TYPE_HUMAN:
                 self.check_game_events()
             else:
                 self.prompt_ai_for_play()
 
-            if self.piece_to_be_moved: # highlight the piece that is selected
-                pygame.draw.polygon(
-                    self.screen, RED,
-                    hexagon_vertices(CENTER_X + self.piece_to_be_moved._location.get_x() * HORIZONTAL_SPACING / 2, CENTER_Y + self.piece_to_be_moved._location.get_y() * VERTICAL_SPACING, HEX_RADIUS), 3
-                )
-                # self.piece_to_be_moved = None
+            self._draw_hex_from_list(CYAN_COLOR, self.next_possible_locations)
 
             HEX_WIDTH, HEX_HEIGHT, VERTICAL_SPACING, HORIZONTAL_SPACING = calculate_hex_dimensions(
                 HEX_RADIUS
             )
 
-            # Redraw grid with new offset
-            #self.hexagons = draw_hex_grid(
-            #    HEX_GRID, HEX_GRID, HEX_RADIUS, self.offset_x, self.offset_y
-            #)
+            player_color = "White" if self.current_player == 0 else "Black"
+            turn_text = f"Current Turn: {player_color}"
+            font = pygame.font.SysFont(None, 36)
+            text_surface = font.render(turn_text, True, (0, 0, 0))
+            text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, 20))  # 20 pixels from the top
+            self.screen.blit(text_surface, text_rect)
+
             pygame.display.flip()
 
     def init_piece_holder(self):
@@ -285,7 +258,7 @@ class HiveGame:
             Queen, Spider, Spider
         ])
         self.piece_rects = []
-        
+
         # I got them by trial and error so don't ask me
         self.holder_width = WIDTH * 3/4 + 20
         self.holder_height = HEIGHT * 1/4 + 10
@@ -322,11 +295,13 @@ class HiveGame:
         # stop if there is a turn currently being played
         # if self.next_possible_locations:
             # return
+
+        # stop any movement if queen has not yet been played
         piece_flag = False
         # print("pieces rect: ", self.pieces_rect)
         for piece_hex, piece in self.pieces_rect:
             # print("hex: ",piece_hex, "piece:", piece)
-            if piece_hex.collidepoint(mouse_pos):
+            if piece_hex.scale_by(0.8).collidepoint(mouse_pos):
                 piece_flag = True
                 team = self.board._turn_number % 2
                 if (team == piece._team and not isinstance(self.piece_to_be_moved, Beetle)):
@@ -337,9 +312,9 @@ class HiveGame:
                     self.next_possible_locations = list(piece.get_next_possible_locations(self.board))
                     # self.next_possible_locations.extend(piece.get_next_possible_locations(self.board))
                     break
-        
+
         return piece_flag
-                
+
 
     def check_clicked_possible_place(self, mouse_pos, piece_flag):
         possible_new_place_flag = False
@@ -347,14 +322,14 @@ class HiveGame:
             if rect.collidepoint(mouse_pos):
                 possible_new_place_flag = True
                 piece_class, piece_index = self.selected_piece[0], self.selected_piece[1]
-                
+
                 if piece_class:
                     self.human_move[self.current_player] = (piece_class.__name__, location)
                     team = self.board._turn_number % 2
                     piece = piece_class(location, team)
-                    self.board.add_object(piece)
-                    self.hands[team][piece_index] = None
-                    self.selected_piece = [None, None]
+                    if self.board.add_object(piece):
+                        self.hands[team][piece_index] = None
+                        self.selected_piece = [None, None]
                     break
                 else:
                     self.human_move[self.current_player] = (self.piece_to_be_moved._location, location)
@@ -371,7 +346,7 @@ class HiveGame:
         # but it is the simplest and what works for now
         self.possible_selections_rect.clear()
         self.current_player = self.board._turn_number % 2
-        
+
         if(possible_new_place_flag == False and not piece_flag):
             self.next_possible_locations.clear()
             self.piece_to_be_moved = None
@@ -387,7 +362,7 @@ class HiveGame:
             if piece_rect.collidepoint(mouse_pos):
                 hand_selection_flag = True
                 self.selected_piece = [piece, index]
-                
+
         if(hand_selection_flag):
            self.next_possible_locations = []
            self.piece_to_be_moved = None
@@ -396,7 +371,7 @@ class HiveGame:
         for location in hex_list:
             x, y = location.get_x(), location.get_y()
             self.possible_selections_rect[location] = pygame.draw.polygon(
-                self.screen, color, 
+                self.screen, color,
                 hexagon_vertices(CENTER_X + x * HORIZONTAL_SPACING / 2, CENTER_Y + y * VERTICAL_SPACING, HEX_RADIUS)
             )
             pygame.draw.polygon(
@@ -404,24 +379,22 @@ class HiveGame:
                 hexagon_vertices(CENTER_X + x * HORIZONTAL_SPACING / 2, CENTER_Y + y * VERTICAL_SPACING, HEX_RADIUS), 3
             )
 
-    def create_alert_window(self, message):
-     
-        alert_width, alert_height = 300, 200
-        alert_x = (WIDTH - alert_width) // 2
-        alert_y = (HEIGHT - alert_height) // 2
+    def create_alert_window(self, message, btn_string):
+        padding = 20  # Padding around text and button
+        button_height = 30
+        button_width = 100
+        line_spacing = 5
 
-        alert_surface = pygame.Surface((alert_width, alert_height))
-        alert_surface.fill((230, 230, 230))  
         font = pygame.font.Font(None, 28)
-        line_spacing = 5 
 
+        # Split the message into lines that fit within the screen width
         words = message.split(' ')
         lines = []
         current_line = ""
         for word in words:
             test_line = f"{current_line} {word}".strip()
-            test_surface = font.render(test_line, True, BLACK)
-            if test_surface.get_width() <= alert_width - 20: 
+            test_surface = font.render(test_line, True, (0, 0, 0))
+            if test_surface.get_width() <= self.screen.get_width() - 2 * padding:
                 current_line = test_line
             else:
                 lines.append(current_line)
@@ -429,37 +402,54 @@ class HiveGame:
         if current_line:
             lines.append(current_line)
 
-        text_y = 20 
+        # Calculate alert dimensions based on text and button size
+        text_width = max(font.render(line, True, (0, 0, 0)).get_width() for line in lines)
+        text_height = sum(font.render(line, True, (0, 0, 0)).get_height() for line in lines) + (len(lines) - 1) * line_spacing
+        alert_width = max(text_width, button_width) + 2 * padding
+        alert_height = text_height + button_height + 3 * padding
+
+        # Position the alert at the top of the screen
+        alert_x = (self.screen.get_width() - alert_width) // 2
+        alert_y = (self.screen.get_height() - alert_height) // 2  # Fixed distance from the top of the window
+
+        # Create alert surface
+        alert_surface = pygame.Surface((alert_width, alert_height))
+        alert_surface.fill((230, 230, 230))
+
+        # Render text centered horizontally and placed vertically within the alert
+        text_y = padding
         for line in lines:
-            text_surface = font.render(line, True, BLACK)
+            text_surface = font.render(line, True, (0, 0, 0))
             text_rect = text_surface.get_rect(center=(alert_width // 2, text_y + text_surface.get_height() // 2))
             alert_surface.blit(text_surface, text_rect)
             text_y += text_surface.get_height() + line_spacing
 
-        button_width, button_height = 100, 50
+        # Create button
         button_x = (alert_width - button_width) // 2
-        button_y = alert_height - button_height - 20
+        button_y = alert_height - button_height - padding
         button_rect = pygame.Rect(button_x, button_y, button_width, button_height)
 
-        button_text = font.render("Okay", True, BLACK)
+        # Render button text
+        button_text = font.render(btn_string, True, (0, 0, 0))
         button_text_rect = button_text.get_rect(center=button_rect.center)
 
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
-                
+
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
                     adjusted_pos = (mouse_pos[0] - alert_x, mouse_pos[1] - alert_y)
-                    
+
                     if button_rect.collidepoint(adjusted_pos):
-                        return 
-            
+                        return
+
             self.screen.blit(alert_surface, (alert_x, alert_y))
-            
+
+            # Draw button
             pygame.draw.rect(alert_surface, (200, 200, 200), button_rect)
-            pygame.draw.rect(alert_surface, BLACK, button_rect, 2)
+            pygame.draw.rect(alert_surface, (0, 0, 0), button_rect, 2)
             alert_surface.blit(button_text, button_text_rect)
-            
+
             pygame.display.flip()

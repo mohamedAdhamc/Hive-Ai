@@ -20,18 +20,27 @@ class Spider(GameObject):
     #     return f"Spider at {self.get_location()}"
 
     def get_next_possible_locations(self, board):
-        print("-------------------------")
+
+        if not board._queens_reference[self._team]:
+            return []
+
         possible_moves = []
         moves = []
         initial_loc: Location = self.get_location()
         x = initial_loc.get_x()
         y = initial_loc.get_y()
+
         
         # check if object can leave its initial position
         if(not board.checkIfvalid(initial_loc, None)):
             return []
         
         def moveStepForward(loc: Location , prevLoc: Location, step, prev_siblings):
+
+
+        def moveStepForward(loc: Location , prevLoc: Location, step):
+            if(board.isNarrowPath(prevLoc, loc)):
+                return False
             flag = False
             x = loc.get_x()
             y = loc.get_y()
@@ -62,7 +71,7 @@ class Spider(GameObject):
             if(step == 1): # If reached the final step with no violations, return true
                 moves.append(loc)
                 return True
-            
+
             # Test all possible moves
             for (dx,dy) in d:
                 newLoc: Location = Location(x+dx,y+dy)
@@ -73,6 +82,7 @@ class Spider(GameObject):
                     moveStepForward(newLoc, loc, step-1, current_siblings)
         
         
+
         d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
         siblings = [board.get_object(Location(x+dx,y+dy)) for dx,dy in d if board.get_object(Location(x+dx,y+dy)) is not None]
         for (dx,dy) in d:
@@ -81,9 +91,9 @@ class Spider(GameObject):
                 # Check if this step can be taken by the spider
                 result = moveStepForward(newLoc, initial_loc, 3, siblings)
             
-        
+
         for newLoc in moves:
             if(board.checkIfvalid(initial_loc, newLoc)):
                 possible_moves.append(newLoc)
-                
+
         return possible_moves

@@ -5,8 +5,10 @@ from utils.pieces.grass_hopper import Grasshopper
 from utils.pieces.beetle import Beetle
 from utils.pieces.spider import Spider
 from utils.location import Location
+from UI.constants import *
 from .state_tree_node import StateTreeNode
 from .algorithms import apply_minmax, apply_alphabeta, iterative_depening
+from random import randint
 
 class StateTree:
 
@@ -35,22 +37,39 @@ class StateTree:
         if node.move:
             self.reverse_move(node.move)
 
-    def add_level(self, node):
+        # if (node.depth == self._depth):
+        #     node.evaluation = self.evaluate_board()
+        #     return
+
+        # next_possible_moves = self._board_state.get_moves_and_deploys()
+        
+        # if not next_possible_moves:
+        #     node.evaluation = self.evaluate_board()
+        #     return
+
+        # for move in next_possible_moves:
+        #     next_board_state = self.play_move(node.board, move)
+        #     child_node = StateTreeNode(node, move, 0, node.depth + 1, next_board_state)
+        #     node.children.append(child_node)
+        #     self.build_tree(child_node)
+
+    def add_level(self, node, i = 2):
         if node.move:
             self.play_move(node.move)
         
         if (node.depth == self._depth):
             node.evaluation = self.evaluate_board()
         else:
-            if (node.depth < self._depth - 2):
+            if (node.depth < self._depth - i):
                 if node.children:
                     node.evaluation = 0
                     for child_node in node.children:
                         self.add_level(child_node)
             else:
                 next_possible_moves = self._board_state.get_moves_and_deploys()
-                if not next_possible_moves:
-                    node.evaluation = self.evaluate_board()
+                evaluation = self.evaluate_board()
+                if node != self._root and (not next_possible_moves or evaluation <= 0):
+                    node.evaluation = evaluation
                 else:
                     node.evaluation = 0
                     for move in next_possible_moves:
@@ -60,6 +79,40 @@ class StateTree:
 
         if node.move:
             self.reverse_move(node.move)
+
+        # self._root.move = None
+        # nodes = [self._root]
+
+        # while nodes:
+        #     node = nodes.pop()
+        #     if node.move:
+        #         for _ in range(i):
+        #             node.move.pop(0)
+        #         for move in node.move:
+        #             self.play_move(move)
+            
+        #     if (node.depth == self._depth):
+        #         node.evaluation = self.evaluate_board()
+        #     else:
+        #         if (node.depth < self._depth - 2):
+        #             if node.children:
+        #                 node.evaluation = 0
+        #                 for child_node in node.children:
+        #                     nodes.append(child_node)
+        #         else:
+        #             next_possible_moves = self._board_state.get_moves_and_deploys()
+        #             if not next_possible_moves:
+        #                 node.evaluation = self.evaluate_board()
+        #             else:
+        #                 node.evaluation = 0
+        #                 for move in next_possible_moves:
+        #                     child_node = StateTreeNode(node, node.move + [move], 0, node.depth + 1)
+        #                     node.children.append(child_node)
+        #                     nodes.append(child_node)
+
+        #     if node.move:
+        #         for move in node.move:
+        #             self.reverse_move(move)
 
     def play_move(self, move):
         source, destination = move
@@ -91,7 +144,7 @@ class StateTree:
             Board.move_object(self._board_state, Location(source.get_x(), source.get_y()), Location(destination.get_x(), destination.get_y()))
 
     def find_distance_to_queen(self, piece_location, queen_location):
-        place_values = [100, 80, 60, 40, 20, 0]
+        place_values = [20, 12, 5, 2, 1, 0]
 
         y_distance = abs(queen_location.get_y() - piece_location.get_y())
         distance_to_queen = (abs(queen_location.get_x() - piece_location.get_x())) + y_distance
@@ -108,11 +161,11 @@ class StateTree:
     def evaluate_board(self):
         self._leaves_count += 1
         piece_values = {
-            "Queen": 100,
-            "Ant": 45,
-            "Beetle": 30,
-            "Grasshopper": 20,
-            "Spider": 15
+            "Queen": 10,
+            "Ant": 8,
+            "Beetle": 5,
+            "Grasshopper": 3,
+            "Spider": 2
         }
 
         # self.play_move(("queen", (0,0)))
@@ -129,7 +182,7 @@ class StateTree:
         # self.play_move(("ant", (1,-3)))
 
         if self._board_state._turn_number < 8:
-            return 0
+            return randint(-100, 3)
 
         queen_surrounded_score = 0
         d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
@@ -175,11 +228,11 @@ class StateTree:
     
     
     def get_best_move(self, algorithm_type, time = 0, max_min = True):
-        if algorithm_type == "min-max":
+        if algorithm_type == AI_MODE_MINMAX:
             result = apply_minmax(self._depth, max_min, self._root)
-        elif algorithm_type == "alpha-beta":
+        elif algorithm_type == AI_MODE_ALPHA_BETA:
             result = apply_alphabeta(self._depth, max_min, self._root)
-        elif algorithm_type == "iterative":
+        elif algorithm_type == AI_MODE_ITERATIVE:
             result = iterative_depening(time, max_min, self)
         for child in self._root.children:
             if result == child.evaluation:

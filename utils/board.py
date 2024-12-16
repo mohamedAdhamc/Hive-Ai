@@ -19,6 +19,25 @@ class Board:
         self._hands = {}
         self.initiate_game()
 
+    def get_board_representation(self):
+        
+        board_representation = [None] * 23
+        pointers = {
+            "Queen": [0, 11],
+            "Ant": [1, 12],
+            "Grasshopper": [4, 15],
+            "Beetle": [7, 18],
+            "Spider": [9, 20]
+        }
+
+        for location, piece in self._objects.items():
+            pointer = pointers[piece.__class__.__name__][piece._team]
+            board_representation[pointer] = location
+            pointers[piece.__class__.__name__][piece._team] += 1
+
+        board_representation[22] = self._turn_number % 2
+        return board_representation
+
     def turn(self):
         """
         Determines whose turn it is to play.
@@ -51,25 +70,25 @@ class Board:
         deploy_locations = self.getPossibleDeployLocations(team_number)
         flag=1
 
-        if (self._turn_number == 7 and team_number == 0) or (self._turn_number == 8 and team_number == 1):
+        if (self._turn_number == 6 and team_number == 0) or (self._turn_number == 7 and team_number == 1):
             if available_pieces.get(Queen, 0) > 0:  # If Queen is still in hand
                 flag=0
                 for location in deploy_locations:
                     combined_results.append(('Queen', location))
         
         if(flag):
+            team_pieces = self.filter_team_pieces()
+
+            for location, piece in team_pieces.items():
+                possible_destinations = piece.get_next_possible_locations(self)
+
+                for destination in possible_destinations:
+                    combined_results.append((location, destination))
+
             for piece_type, count in available_pieces.items():
                 if count > 0:
                     for location in deploy_locations:
                         combined_results.append((piece_type.__name__, location))
-
-        team_pieces = self.filter_team_pieces()
-
-        for location, piece in team_pieces.items():
-            possible_destinations = piece.get_next_possible_locations(self)
-
-            for destination in possible_destinations:
-                combined_results.append((location, destination))
 
         return combined_results
 
@@ -95,7 +114,6 @@ class Board:
     def add_object(self, game_object: GameObject):
         """
         Add a game object to the board. Validates placement rules before committing changes.
-        
         Ensures that:
         1. Queen must be played within the first 4 moves for each player
         2. If 4 moves pass without playing the queen, the next move MUST be a queen
@@ -107,7 +125,7 @@ class Board:
                 team_moves = sum(1 for loc, piece in self._objects.items() if piece.get_team() == current_team)
                 
                 if team_moves >= 3 and not isinstance(game_object, Queen):
-                    raise QueenNotPlayedException(f"Player {current_team + 1} must play their queen by the 4th move")
+                    raise QueenNotPlayedException(f"you must play queen by the 4th move")
 
             if isinstance(game_object, Queen):
                 self._queen_played[current_team] = True
@@ -125,7 +143,7 @@ class Board:
             return True  
 
         except QueenNotPlayedException as e:
-            self.alert_callback(str(e)) 
+            self.alert_callback(str(e), 'Okay') 
             return False
 
 
@@ -224,7 +242,7 @@ class Board:
         self._objects[(newLocation)] = object
 
         self._turn_number += 1
-        if self._turn_number > 4:
+        if self._turn_number > 7:
             self.check_win_condition()
         
         # print(object.__class__.__name__," was moved to ", newLocation)
