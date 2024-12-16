@@ -44,20 +44,12 @@ class Spider(GameObject):
             x = loc.get_x()
             y = loc.get_y()
             d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
-            # check if the spider is having neighbours (Moving on edges)
-            # for (dx,dy) in d:
-            #     newLoc: Location = Location(x+dx,y+dy)
-            #     if((prevLoc.get_x(),prevLoc.get_y()) == (x+dx,y+dy) or (initial_loc.get_x(),initial_loc.get_y()) == (x+dx,y+dy)):
-            #         continue
-            #     if(board.get_object(newLoc) is not None):
-            #         flag = True
-            #         break
                 
             # check for common siblings
             # current_siblings = [board.get_object(Location(x+dx,y+dy)) for dx,dy in d if (board.get_object(Location(x+dx,y+dy)) is not None and board.get_object(Location(x+dx,y+dy)) is not self)]
             current_siblings = [board.get_object(Location(x+dx,y+dy)) for dx,dy in d if (board.get_object(Location(x+dx,y+dy)) is not None)]
             common_siblings = [sibling for sibling in current_siblings if sibling in prev_siblings and sibling is not self]
-            print("common siblings:", common_siblings,"current_serach_location:", loc)
+            # print("common siblings:", common_siblings,"current_serach_location:", loc)
             if(board.isNarrowPath(prevLoc, loc) and not self in current_siblings):
                 return False
             
