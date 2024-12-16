@@ -124,7 +124,6 @@ class HiveGame:
 
 
     def prompt_ai_for_play(self):
-        start_time = time.time()
         skip = False
         for child_node in self.tree[self.current_player]._root.children:
             try:
@@ -135,14 +134,12 @@ class HiveGame:
             except Exception:
                 pass
         else:
-            build_start_time = time.time()
             self.tree[self.current_player] = StateTree(self.board, 2)
             self.tree[self.current_player].build_tree(self.tree[self.current_player]._root)
             skip = True
 
         self.tree[self.current_player]._board_state._objects = copy.deepcopy(self.board._objects)
         if not skip:
-            build_start_time = time.time()
             self.tree[self.current_player]._leaves_count = 0
             self.tree[self.current_player]._depth += 2
             self.tree[self.current_player].add_level(self.tree[self.current_player]._root)
@@ -155,7 +152,7 @@ class HiveGame:
         destination_y = destination.get_y()
 
         # the ai is thinking
-        time.sleep(1)
+        time.sleep(0.1)
         if (isinstance(source, str)):
             team = 0 if (self.board._turn_number % 2 == 0) else 1
             if source == "Queen":

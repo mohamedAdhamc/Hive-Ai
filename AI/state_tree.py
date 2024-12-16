@@ -198,13 +198,13 @@ class StateTree:
 
         pieces_movement_score = 0
         for location, piece in list(self._board_state._objects.items()):
-            moves = piece.get_next_possible_locations(self._board_state)
+            # moves = piece.get_next_possible_locations(self._board_state)
             piece_value = piece_values[piece.__class__.__name__]
-            for move in moves:
-                if piece._team == 0:
-                    pieces_movement_score += piece_value * self.find_distance_to_queen(move, self._board_state._queens_reference[1]._location)
-                elif piece._team == 1:
-                    pieces_movement_score -= piece_value * self.find_distance_to_queen(move, self._board_state._queens_reference[0]._location)
+            # for move in moves:
+            if piece._team == 0:
+                pieces_movement_score += piece_value * self.find_distance_to_queen(location, self._board_state._queens_reference[1]._location)
+            elif piece._team == 1:
+                pieces_movement_score -= piece_value * self.find_distance_to_queen(location, self._board_state._queens_reference[0]._location)
 
         score = pieces_movement_score + 1000 * queen_surrounded_score
         return score
