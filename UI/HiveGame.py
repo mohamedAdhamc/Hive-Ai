@@ -1,6 +1,7 @@
 import pygame
 import copy
 import time
+import os
 
 from .hex_utils import (
     calculate_hex_dimensions,
@@ -91,13 +92,15 @@ class HiveGame:
             self.tree[1] = StateTree(self.board, 1)
             self.tree[1].build_tree(self.tree[1]._root)
 
+        self.background_image = pygame.image.load(os.path.join("assets", "background_game.png"))
+        self.background_image = pygame.transform.scale(self.background_image, (WIDTH, HEIGHT))
+
         pygame.display.set_caption("Hive Game")
 
     def win_callback(self, team):
         self.running = False
         won = "WHITE" if team == 0 else "BLACK"
 
-        print(f"{won} team won")
         self.create_alert_window(f"{won} team won", 'Close')
 
     def check_game_events(self):
@@ -121,7 +124,6 @@ class HiveGame:
 
 
     def prompt_ai_for_play(self):
-        start_time = time.time()
         skip = False
         for child_node in self.tree[self.current_player]._root.children:
             try:
@@ -132,21 +134,15 @@ class HiveGame:
             except Exception:
                 pass
         else:
-            build_start_time = time.time()
             self.tree[self.current_player] = StateTree(self.board, 2)
             self.tree[self.current_player].build_tree(self.tree[self.current_player]._root)
             skip = True
-        # self.tree[self.current_player]._root.print_tree()
 
         self.tree[self.current_player]._board_state._objects = copy.deepcopy(self.board._objects)
         if not skip:
-            build_start_time = time.time()
             self.tree[self.current_player]._leaves_count = 0
             self.tree[self.current_player]._depth += 2
             self.tree[self.current_player].add_level(self.tree[self.current_player]._root)
-
-        print("leaves count: ", self.tree[self.current_player]._leaves_count)
-        print("bulid time: ", time.time() - build_start_time)
 
         chosen_node = self.tree[self.current_player].get_best_move(self.players_modes[self.current_player], self.players_diff[self.current_player], self.current_player == 0)
 
@@ -156,24 +152,33 @@ class HiveGame:
         destination_y = destination.get_y()
 
         # the ai is thinking
-        time.sleep(1)
+        time.sleep(0.1)
         if (isinstance(source, str)):
             team = 0 if (self.board._turn_number % 2 == 0) else 1
             if source == "Queen":
                 piece = Queen(Location(destination_x, destination_y), team)
+                queen_index = self.hands[team].index(Queen)
+                self.hands[team][queen_index] = None
             elif source == "Ant":
                 piece = Ant(Location(destination_x, destination_y), team)
+                ant_index = self.hands[team].index(Ant)
+                self.hands[team][ant_index] = None
             elif source == "Beetle":
                 piece = Beetle(Location(destination_x, destination_y), team)
+                beetle_index = self.hands[team].index(Beetle)
+                self.hands[team][beetle_index] = None
             elif source == "Grasshopper":
                 piece = Grasshopper(Location(destination_x, destination_y), team)
+                grasshopper_index = self.hands[team].index(Grasshopper)
+                self.hands[team][grasshopper_index] = None
             elif source == "Spider":
                 piece = Spider(Location(destination_x, destination_y), team)
+                spider_index = self.hands[team].index(Spider)
+                self.hands[team][spider_index] = None
             Board.add_object(self.board, piece)
         else:
             Board.move_object(self.board, Location(source.get_x(), source.get_y()), Location(destination_x, destination_y))
         self.current_player = self.board._turn_number % 2
-        # print("total time: ", time.time() - start_time)
 
 
     def start_game_loop(self):
@@ -181,12 +186,15 @@ class HiveGame:
 
         self.running = True
         while self.running:
-            self.screen.fill(BACKGROUND)
-            self.draw_possible_deploy_locations()
+            self.screen.blit(self.background_image, (0, 0))
             self.draw_hand()
 
+            if self.players[self.current_player] == PLAYER_TYPE_HUMAN:
+                self.check_game_events()
+            else:
+                self.prompt_ai_for_play()
 
-            
+            self.draw_possible_deploy_locations()
 
             for piece in self.board._objects.values():
                 x, y = piece._location.get_x(), piece._location.get_y()
@@ -215,19 +223,13 @@ class HiveGame:
                     hexagon_vertices(CENTER_X + correct_x, CENTER_Y + correct_y, HEX_RADIUS), 3
                 )
                 self.screen.blit(piece.sprite, (CENTER_X + correct_x - p_width / 2, CENTER_Y + correct_y - p_height / 2))
-            
+
             if self.piece_to_be_moved: # highlight the piece that is selected
                 pygame.draw.polygon(
                     self.screen, RED,
                     hexagon_vertices(CENTER_X + self.piece_to_be_moved._location.get_x() * HORIZONTAL_SPACING / 2, CENTER_Y + self.piece_to_be_moved._location.get_y() * VERTICAL_SPACING, HEX_RADIUS), 3
                 )
                 # self.piece_to_be_moved = None
-
-
-            if self.players[self.current_player] == PLAYER_TYPE_HUMAN:
-                self.check_game_events()
-            else:
-                self.prompt_ai_for_play()
 
             self._draw_hex_from_list(CYAN_COLOR, self.next_possible_locations)
 
@@ -245,8 +247,7 @@ class HiveGame:
             pygame.display.flip()
 
     def init_piece_holder(self):
-        # two times one for yellow team one for black team and it has to
-        # done this way so it does net get takon as a shallow copy
+        # Initialize hands for both teams
         self.hands.append([
             Ant, Ant, Ant,
             Beetle, Beetle,
@@ -261,32 +262,59 @@ class HiveGame:
         ])
         self.piece_rects = []
 
-        # I got them by trial and error so don't ask me
+        # Initialize holder dimensions
         self.holder_width = WIDTH * 3/4 + 20
         self.holder_height = HEIGHT * 1/4 + 10
-        self.pieces_holder_border = pygame.rect.Rect((WIDTH * 3/4, HEIGHT * 1/4), (WIDTH * 1/4 + 5, 125))
-        self.pieces_holder = pygame.rect.Rect((WIDTH * 3/4 + 5, HEIGHT * 1/4 + 5), (WIDTH * 1/4, 125 - 10))
 
-        # one collision detection box work for both players
-        for index, piece in enumerate(self.hands[0]):
-            x = self.holder_width + (index % 4 * 40)
-            y = self.holder_height + (index // 4) * 35
-            self.piece_rects.append(piece.sprite.get_rect().move(x, y))
+        # Initialize rectangles for both players' hands
+        self.pieces_holder_border = [
+            pygame.rect.Rect((WIDTH * 3/4, HEIGHT * 1/4), (WIDTH * 1/4 + 5, 125)),
+            pygame.rect.Rect((WIDTH * 3/4, HEIGHT * 1/4 + 205), (WIDTH * 1/4 + 5, 125))
+        ]
+        self.pieces_holder = [
+            pygame.rect.Rect((WIDTH * 3/4 + 5, HEIGHT * 1/4 + 5), (WIDTH * 1/4, 125 - 10)),
+            pygame.rect.Rect((WIDTH * 3/4 + 5, HEIGHT * 1/4 + 210), (WIDTH * 1/4, 125 - 10))
+        ]
+
+        # Initialize piece rectangles for collision detection for both teams
+        for team in range(2):
+            for index, piece in enumerate(self.hands[team]):
+                if team == 0:
+                    x = self.holder_width + (index % 4 * 40)
+                    y = self.holder_height + (index // 4) * 35
+                else:
+                    x = self.holder_width + (index % 4 * 40)
+                    y = self.holder_height + (index // 4) * 35 + 205
+                piece_rect = piece.sprite.get_rect().move(x, y)
+                self.piece_rects.append(piece_rect)
 
 
     def draw_hand(self):
+        current_turn = self.board._turn_number % 2
         weird_brown_color = (210, 189, 150)
-        pygame.draw.rect(self.screen, (10, 10, 10), self.pieces_holder_border, border_radius = 5)
-        pygame.draw.rect(self.screen, weird_brown_color, self.pieces_holder, border_radius = 5)
+        active_color = (0, 51, 153)
+        inactive_color = (64, 64, 64)
+        
+        for i in range(2):
+            if i == current_turn:
+                pygame.draw.rect(self.screen, active_color, self.pieces_holder_border[i], border_radius=5)
+            else:
+                pygame.draw.rect(self.screen, inactive_color, self.pieces_holder_border[i], border_radius=5)
+    
+            pygame.draw.rect(self.screen, weird_brown_color, self.pieces_holder[i], border_radius=5)
 
-        team = self.board._turn_number % 2
-        for index, piece in enumerate(self.hands[team]):
-            if not piece:
-                continue
+        for team in range(2):
+            for index, piece in enumerate(self.hands[team]):
+                if not piece:
+                    continue
+                if team == 0:
+                    x = self.holder_width + (index % 4 * 40)
+                    y = self.holder_height + (index // 4) * 35
+                else:
+                    x = self.holder_width + (index % 4 * 40)
+                    y = self.holder_height + (index // 4) * 35 + 200 
+                self.screen.blit(piece.sprite, (x, y))
 
-            x = self.holder_width + (index % 4 * 40)
-            y = self.holder_height + (index // 4) * 35
-            self.screen.blit(piece.sprite, (x, y))
 
     def draw_possible_deploy_locations(self):
         if self.selected_piece[0]:
@@ -294,15 +322,9 @@ class HiveGame:
             self._draw_hex_from_list(CYAN_COLOR, self.possible_deploy_locations)
 
     def check_piece_click(self, mouse_pos):
-        # stop if there is a turn currently being played
-        # if self.next_possible_locations:
-            # return
-
         # stop any movement if queen has not yet been played
         piece_flag = False
-        # print("pieces rect: ", self.pieces_rect)
         for piece_hex, piece in self.pieces_rect:
-            # print("hex: ",piece_hex, "piece:", piece)
             if piece_hex.scale_by(0.8).collidepoint(mouse_pos):
                 piece_flag = True
                 team = self.board._turn_number % 2
@@ -342,7 +364,6 @@ class HiveGame:
                     self.next_possible_locations.clear()
                     # clear the pieces rect
                     self.pieces_rect.clear()
-                    # print("Old location:", old_location)
                     self.drawn_locations.clear()
                     self.piece_to_be_moved = None
 
@@ -354,7 +375,7 @@ class HiveGame:
         if(possible_new_place_flag == False and not piece_flag):
             self.next_possible_locations.clear()
             self.piece_to_be_moved = None
-        
+
         if(possible_new_place_flag == False and not piece_flag and not selection_flag):
             self.selected_piece = [None, None]
             self.possible_deploy_locations.clear()
@@ -363,19 +384,20 @@ class HiveGame:
     def check_piece_hand_selection(self, mouse_pos):
         team = self.board._turn_number % 2
         hand_selection_flag = False
-        for index, (piece_rect, piece) in enumerate(zip(self.piece_rects, self.hands[team])):
+
+        for index, piece in enumerate(self.hands[team]):
             if not piece:
                 continue
-
+            piece_rect = self.piece_rects[team * 11 + index]
             if piece_rect.collidepoint(mouse_pos):
                 hand_selection_flag = True
                 self.possible_deploy_locations = self.board.getPossibleDeployLocations(team)
                 self.selected_piece = [piece, index]
+                break
 
-        if(hand_selection_flag):
-           self.next_possible_locations = []
-           self.piece_to_be_moved = None
-           
+        if hand_selection_flag:
+            self.next_possible_locations = []
+            self.piece_to_be_moved = None         
         return hand_selection_flag
 
     def _draw_hex_from_list(self, color, hex_list):

@@ -27,7 +27,7 @@ class Queen(GameObject):
         loc: Location = self.get_location()
         x = loc.get_x()
         y = loc.get_y()
-        
+
         # check if object can leave its initial position
         if(not board.checkIfvalid(loc, None)):
             return []
@@ -36,7 +36,6 @@ class Queen(GameObject):
         for (dx,dy) in d:
             newLoc: Location = Location(x+dx,y+dy)
             if(board.get_object(newLoc) is None):
-                # print("true1", newLoc)
                 if(not board.isNarrowPath(loc, newLoc)): # Check if the path is not narrow
                     if(board.checkIfvalid(loc,newLoc)): # check if game is not ruined (Check if the hive is still connected)
                         possible_moves.append(newLoc)

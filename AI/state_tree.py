@@ -21,7 +21,7 @@ class StateTree:
     def build_tree(self, node):
         if node.move:
             self.play_move(node.move)
-        
+
         if (node.depth == self._depth):
             node.evaluation = self.evaluate_board()
         else:
@@ -33,7 +33,7 @@ class StateTree:
                     child_node = StateTreeNode(node, move, 0, node.depth + 1)
                     node.children.append(child_node)
                     self.build_tree(child_node)
-        
+
         if node.move:
             self.reverse_move(node.move)
 
@@ -42,7 +42,7 @@ class StateTree:
         #     return
 
         # next_possible_moves = self._board_state.get_moves_and_deploys()
-        
+
         # if not next_possible_moves:
         #     node.evaluation = self.evaluate_board()
         #     return
@@ -56,7 +56,7 @@ class StateTree:
     def add_level(self, node, i = 2):
         if node.move:
             self.play_move(node.move)
-        
+
         if (node.depth == self._depth):
             node.evaluation = self.evaluate_board()
         else:
@@ -90,7 +90,7 @@ class StateTree:
         #             node.move.pop(0)
         #         for move in node.move:
         #             self.play_move(move)
-            
+
         #     if (node.depth == self._depth):
         #         node.evaluation = self.evaluate_board()
         #     else:
@@ -130,9 +130,9 @@ class StateTree:
                 piece = Grasshopper(Location(destination_x, destination_y), team)
             elif source == "Spider":
                 piece = Spider(Location(destination_x, destination_y), team)
-            Board.add_object(self._board_state, piece)
+            Board.add_object(self._board_state, piece, True)
         else:
-            Board.move_object(self._board_state, Location(source.get_x(), source.get_y()), Location(destination_x, destination_y))
+            Board.move_object(self._board_state, Location(source.get_x(), source.get_y()), Location(destination_x, destination_y), True)
 
     def reverse_move(self, move):
         destination, source = move
@@ -141,7 +141,7 @@ class StateTree:
             Board.remove_object(self._board_state, Location(source.get_x(), source.get_y()))
         else:
             self._board_state._turn_number -= 1
-            Board.move_object(self._board_state, Location(source.get_x(), source.get_y()), Location(destination.get_x(), destination.get_y()))
+            Board.move_object(self._board_state, Location(source.get_x(), source.get_y()), Location(destination.get_x(), destination.get_y()), True)
 
     def find_distance_to_queen(self, piece_location, queen_location):
         place_values = [20, 12, 5, 2, 1, 0]
@@ -149,7 +149,7 @@ class StateTree:
         y_distance = abs(queen_location.get_y() - piece_location.get_y())
         distance_to_queen = (abs(queen_location.get_x() - piece_location.get_x())) + y_distance
         index = max(distance_to_queen//2, y_distance) - 1
-        
+
         if distance_to_queen == 0:
             return place_values[1]
         elif index < len(place_values):
@@ -197,17 +197,14 @@ class StateTree:
             i = 1
 
         pieces_movement_score = 0
-        # print("--------board state------")
-        # print(self._board_state._objects)
         for location, piece in list(self._board_state._objects.items()):
-            # print("i) ", self._board_state._objects)
-            moves = piece.get_next_possible_locations(self._board_state)
+            # moves = piece.get_next_possible_locations(self._board_state)
             piece_value = piece_values[piece.__class__.__name__]
-            for move in moves:
-                if piece._team == 0:
-                    pieces_movement_score += piece_value * self.find_distance_to_queen(move, self._board_state._queens_reference[1]._location)
-                elif piece._team == 1:
-                    pieces_movement_score -= piece_value * self.find_distance_to_queen(move, self._board_state._queens_reference[0]._location)
+            # for move in moves:
+            if piece._team == 0:
+                pieces_movement_score += piece_value * self.find_distance_to_queen(location, self._board_state._queens_reference[1]._location)
+            elif piece._team == 1:
+                pieces_movement_score -= piece_value * self.find_distance_to_queen(location, self._board_state._queens_reference[0]._location)
 
         score = pieces_movement_score + 1000 * queen_surrounded_score
         return score
@@ -216,17 +213,17 @@ class StateTree:
 
         if (board_state._turn_number == 0): #first move is always a piece in the middle
             return [("ant", (0, 0)), ("beetle", (0, 0)), ("grasshopper", (0, 0)), ("spider", (0, 0)), ("queen", (0, 0))]
-        
+
         if (board_state._turn_number == 1): # second move is always a piece next to first piece
             return [("ant", (1, 1)), ("beetle", (1, 1)), ("grasshopper", (1, 1)), ("spider", (1, 1)), ("queen", (1, 1))]
-        
+
         hand_pieces = []
         board_pices = []
         #loop on all hand_pieces and determine all possible locations to put them on
         #loop on all board_pices and get all possible moves for them but only if the queen is played
         return []
-    
-    
+
+
     def get_best_move(self, algorithm_type, time = 0, max_min = True):
         if algorithm_type == AI_MODE_MINMAX:
             result = apply_minmax(self._depth, max_min, self._root)
@@ -242,6 +239,5 @@ if __name__== '__main__':
     board = Board()
     tree = StateTree(board, 1)
     tree.build_tree(tree._root)
-    print(tree.get_best_move("iterative", 0.001))
-    
+
     # tree.evaluate_board()
