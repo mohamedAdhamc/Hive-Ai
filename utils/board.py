@@ -125,7 +125,7 @@ class Board:
                 team_moves = sum(1 for loc, piece in self._objects.items() if piece.get_team() == current_team)
                 
                 if team_moves >= 3 and not isinstance(game_object, Queen):
-                    raise QueenNotPlayedException(f"Player {current_team + 1} must play their queen by the 4th move")
+                    raise QueenNotPlayedException(f"you must play queen by the 4th move")
 
             if isinstance(game_object, Queen):
                 self._queen_played[current_team] = True

@@ -14,7 +14,7 @@ from AI.state_tree import StateTree
 from UI.constants import *
 
 # Screen
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1200, 800
 
 # Colors
 BACKGROUND = (255, 255, 255)  # Background
@@ -428,23 +428,21 @@ class HiveGame:
             )
 
     def create_alert_window(self, message, btn_string):
-     
-        alert_width, alert_height = 300, 200
-        alert_x = (WIDTH - alert_width) // 2
-        alert_y = (HEIGHT - alert_height) // 2
+        padding = 20  # Padding around text and button
+        button_height = 30
+        button_width = 100
+        line_spacing = 5
 
-        alert_surface = pygame.Surface((alert_width, alert_height))
-        alert_surface.fill((230, 230, 230))  
         font = pygame.font.Font(None, 28)
-        line_spacing = 5 
 
+        # Split the message into lines that fit within the screen width
         words = message.split(' ')
         lines = []
         current_line = ""
         for word in words:
             test_line = f"{current_line} {word}".strip()
-            test_surface = font.render(test_line, True, BLACK)
-            if test_surface.get_width() <= alert_width - 20: 
+            test_surface = font.render(test_line, True, (0, 0, 0))
+            if test_surface.get_width() <= self.screen.get_width() - 2 * padding:
                 current_line = test_line
             else:
                 lines.append(current_line)
@@ -452,37 +450,55 @@ class HiveGame:
         if current_line:
             lines.append(current_line)
 
-        text_y = 20 
+        # Calculate alert dimensions based on text and button size
+        text_width = max(font.render(line, True, (0, 0, 0)).get_width() for line in lines)
+        text_height = sum(font.render(line, True, (0, 0, 0)).get_height() for line in lines) + (len(lines) - 1) * line_spacing
+        alert_width = max(text_width, button_width) + 2 * padding
+        alert_height = text_height + button_height + 3 * padding
+
+        # Position the alert at the top of the screen
+        alert_x = (self.screen.get_width() - alert_width) // 2
+        alert_y = 20  # Fixed distance from the top of the window
+
+        # Create alert surface
+        alert_surface = pygame.Surface((alert_width, alert_height))
+        alert_surface.fill((230, 230, 230))
+
+        # Render text centered horizontally and placed vertically within the alert
+        text_y = padding
         for line in lines:
-            text_surface = font.render(line, True, BLACK)
+            text_surface = font.render(line, True, (0, 0, 0))
             text_rect = text_surface.get_rect(center=(alert_width // 2, text_y + text_surface.get_height() // 2))
             alert_surface.blit(text_surface, text_rect)
             text_y += text_surface.get_height() + line_spacing
 
-        button_width, button_height = 100, 50
+        # Create button
         button_x = (alert_width - button_width) // 2
-        button_y = alert_height - button_height - 20
+        button_y = alert_height - button_height - padding
         button_rect = pygame.Rect(button_x, button_y, button_width, button_height)
 
-        button_text = font.render(btn_string, True, BLACK)
+        # Render button text
+        button_text = font.render(btn_string, True, (0, 0, 0))
         button_text_rect = button_text.get_rect(center=button_rect.center)
 
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
-                
+
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
                     adjusted_pos = (mouse_pos[0] - alert_x, mouse_pos[1] - alert_y)
-                    
+
                     if button_rect.collidepoint(adjusted_pos):
-                        return 
-            
+                        return
+
             self.screen.blit(alert_surface, (alert_x, alert_y))
-            
+
+            # Draw button
             pygame.draw.rect(alert_surface, (200, 200, 200), button_rect)
-            pygame.draw.rect(alert_surface, BLACK, button_rect, 2)
+            pygame.draw.rect(alert_surface, (0, 0, 0), button_rect, 2)
             alert_surface.blit(button_text, button_text_rect)
-            
+
             pygame.display.flip()
+
