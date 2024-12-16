@@ -57,7 +57,7 @@ class Spider(GameObject):
             # current_siblings = [board.get_object(Location(x+dx,y+dy)) for dx,dy in d if (board.get_object(Location(x+dx,y+dy)) is not None and board.get_object(Location(x+dx,y+dy)) is not self)]
             current_siblings = [board.get_object(Location(x+dx,y+dy)) for dx,dy in d if (board.get_object(Location(x+dx,y+dy)) is not None)]
             common_siblings = [sibling for sibling in current_siblings if sibling in prev_siblings and sibling is not self]
-            print("common siblings:", common_siblings,"current_serach_location:", loc)
+            # print("common siblings:", common_siblings,"current_serach_location:", loc)
             if(board.isNarrowPath(prevLoc, loc) and not self in current_siblings):
                 return False
             

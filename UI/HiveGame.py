@@ -1,6 +1,7 @@
 import pygame
 import copy
 import time
+import threading
 
 from .hex_utils import (
     calculate_hex_dimensions,
@@ -82,6 +83,7 @@ class HiveGame:
         self.board = Board(self.win_callback, self.create_alert_window)
 
         self.human_move = [(None, None), (None, None)]
+        self.ai_running = False
         self.tree = [None, None]
 
         if self.players[0] != PLAYER_TYPE_HUMAN:
@@ -121,7 +123,7 @@ class HiveGame:
 
 
     def prompt_ai_for_play(self):
-        start_time = time.time()
+        # start_time = time.time()
         skip = False
         for child_node in self.tree[self.current_player]._root.children:
             try:
@@ -132,21 +134,26 @@ class HiveGame:
             except Exception:
                 pass
         else:
-            build_start_time = time.time()
+            # build_start_time = time.time()
             self.tree[self.current_player] = StateTree(self.board, 2)
             self.tree[self.current_player].build_tree(self.tree[self.current_player]._root)
             skip = True
         # self.tree[self.current_player]._root.print_tree()
 
+        self.tree[self.current_player]._board_state = Board(0, 0)
         self.tree[self.current_player]._board_state._objects = copy.deepcopy(self.board._objects)
+        self.tree[self.current_player]._board_state._hands = copy.deepcopy(self.board._hands)
+        self.tree[self.current_player]._board_state._queens_reference = copy.deepcopy(self.board._queens_reference)
+        self.tree[self.current_player]._board_state._queen_played = copy.deepcopy(self.board._queen_played)
+        self.tree[self.current_player]._board_state._turn_number = copy.deepcopy(self.board._turn_number)
         if not skip:
-            build_start_time = time.time()
+            # build_start_time = time.time()
             self.tree[self.current_player]._leaves_count = 0
             self.tree[self.current_player]._depth += 2
             self.tree[self.current_player].add_level(self.tree[self.current_player]._root)
 
-        print("leaves count: ", self.tree[self.current_player]._leaves_count)
-        print("bulid time: ", time.time() - build_start_time)
+        # print("leaves count: ", self.tree[self.current_player]._leaves_count)
+        # print("bulid time: ", time.time() - build_start_time)
 
         chosen_node = self.tree[self.current_player].get_best_move(self.players_modes[self.current_player], self.players_diff[self.current_player], self.current_player == 0)
 
@@ -156,7 +163,7 @@ class HiveGame:
         destination_y = destination.get_y()
 
         # the ai is thinking
-        time.sleep(1)
+        # time.sleep(1)
         if (isinstance(source, str)):
             team = 0 if (self.board._turn_number % 2 == 0) else 1
             if source == "Queen":
@@ -174,6 +181,7 @@ class HiveGame:
             Board.move_object(self.board, Location(source.get_x(), source.get_y()), Location(destination_x, destination_y))
         self.current_player = self.board._turn_number % 2
         # print("total time: ", time.time() - start_time)
+        self.ai_running = False
 
 
     def start_game_loop(self):
@@ -224,8 +232,11 @@ class HiveGame:
 
             if self.players[self.current_player] == PLAYER_TYPE_HUMAN:
                 self.check_game_events()
-            else:
-                self.prompt_ai_for_play()
+            elif not self.ai_running:
+                self.ai_running = True
+                # self.prompt_ai_for_play()
+                ai_thread = threading.Thread(target=self.prompt_ai_for_play)
+                ai_thread.start()
 
             self._draw_hex_from_list(CYAN_COLOR, self.next_possible_locations)
 
