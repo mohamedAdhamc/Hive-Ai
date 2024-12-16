@@ -101,7 +101,6 @@ class HiveGame:
         self.running = False
         won = "WHITE" if team == 0 else "BLACK"
 
-        print(f"{won} team won")
         self.create_alert_window(f"{won} team won", 'Close')
 
     def check_game_events(self):
@@ -140,7 +139,6 @@ class HiveGame:
             self.tree[self.current_player] = StateTree(self.board, 2)
             self.tree[self.current_player].build_tree(self.tree[self.current_player]._root)
             skip = True
-        # self.tree[self.current_player]._root.print_tree()
 
         self.tree[self.current_player]._board_state._objects = copy.deepcopy(self.board._objects)
         if not skip:
@@ -148,9 +146,6 @@ class HiveGame:
             self.tree[self.current_player]._leaves_count = 0
             self.tree[self.current_player]._depth += 2
             self.tree[self.current_player].add_level(self.tree[self.current_player]._root)
-
-        print("leaves count: ", self.tree[self.current_player]._leaves_count)
-        print("bulid time: ", time.time() - build_start_time)
 
         chosen_node = self.tree[self.current_player].get_best_move(self.players_modes[self.current_player], self.players_diff[self.current_player], self.current_player == 0)
 
@@ -177,7 +172,6 @@ class HiveGame:
         else:
             Board.move_object(self.board, Location(source.get_x(), source.get_y()), Location(destination_x, destination_y))
         self.current_player = self.board._turn_number % 2
-        # print("total time: ", time.time() - start_time)
 
 
     def start_game_loop(self):
@@ -295,15 +289,9 @@ class HiveGame:
             self._draw_hex_from_list(CYAN_COLOR, self.possible_deploy_locations)
 
     def check_piece_click(self, mouse_pos):
-        # stop if there is a turn currently being played
-        # if self.next_possible_locations:
-            # return
-
         # stop any movement if queen has not yet been played
         piece_flag = False
-        # print("pieces rect: ", self.pieces_rect)
         for piece_hex, piece in self.pieces_rect:
-            # print("hex: ",piece_hex, "piece:", piece)
             if piece_hex.scale_by(0.8).collidepoint(mouse_pos):
                 piece_flag = True
                 team = self.board._turn_number % 2
@@ -343,7 +331,6 @@ class HiveGame:
                     self.next_possible_locations.clear()
                     # clear the pieces rect
                     self.pieces_rect.clear()
-                    # print("Old location:", old_location)
                     self.drawn_locations.clear()
                     self.piece_to_be_moved = None
 

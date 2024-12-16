@@ -30,11 +30,11 @@ class Spider(GameObject):
         x = initial_loc.get_x()
         y = initial_loc.get_y()
 
-        
+
         # check if object can leave its initial position
         if(not board.checkIfvalid(initial_loc, None)):
             return []
-        
+
 
 
         def moveStepForward(loc: Location , prevLoc: Location, step, prev_siblings):
@@ -52,21 +52,20 @@ class Spider(GameObject):
             #     if(board.get_object(newLoc) is not None):
             #         flag = True
             #         break
-                
+
             # check for common siblings
             # current_siblings = [board.get_object(Location(x+dx,y+dy)) for dx,dy in d if (board.get_object(Location(x+dx,y+dy)) is not None and board.get_object(Location(x+dx,y+dy)) is not self)]
             current_siblings = [board.get_object(Location(x+dx,y+dy)) for dx,dy in d if (board.get_object(Location(x+dx,y+dy)) is not None)]
             common_siblings = [sibling for sibling in current_siblings if sibling in prev_siblings and sibling is not self]
-            print("common siblings:", common_siblings,"current_serach_location:", loc)
             if(board.isNarrowPath(prevLoc, loc) and not self in current_siblings):
                 return False
-            
+
             if(len(common_siblings) == 0):
-                return False    
-                
+                return False
+
             # if(flag == False): # if not moving on edge return false
             #     return False
-            
+
             if(step == 1): # If reached the final step with no violations, return true
                 moves.append(loc)
                 return True
@@ -79,8 +78,8 @@ class Spider(GameObject):
                 if(board.get_object(newLoc) is None):
                 # Check if this step can be taken by the spider
                     moveStepForward(newLoc, loc, step-1, current_siblings)
-        
-        
+
+
 
         d = [(2,0),(-2,0),(1,1),(-1,1),(1,-1),(-1,-1)]
         siblings = [board.get_object(Location(x+dx,y+dy)) for dx,dy in d if board.get_object(Location(x+dx,y+dy)) is not None]
@@ -89,7 +88,7 @@ class Spider(GameObject):
             if(board.get_object(newLoc) is None):
                 # Check if this step can be taken by the spider
                 result = moveStepForward(newLoc, initial_loc, 3, siblings)
-            
+
 
         for newLoc in moves:
             if(board.checkIfvalid(initial_loc, newLoc)):
