@@ -290,12 +290,18 @@ class HiveGame:
 
 
     def draw_hand(self):
+        current_turn = self.board._turn_number % 2
         weird_brown_color = (210, 189, 150)
+        active_color = (0, 51, 153)
+        inactive_color = (64, 64, 64)
         
         for i in range(2):
-            pygame.draw.rect(self.screen, (10, 10, 10), self.pieces_holder_border[i], border_radius=5)
+            if i == current_turn:
+                pygame.draw.rect(self.screen, active_color, self.pieces_holder_border[i], border_radius=5)
+            else:
+                pygame.draw.rect(self.screen, inactive_color, self.pieces_holder_border[i], border_radius=5)
+    
             pygame.draw.rect(self.screen, weird_brown_color, self.pieces_holder[i], border_radius=5)
-
 
         for team in range(2):
             for index, piece in enumerate(self.hands[team]):
@@ -306,8 +312,9 @@ class HiveGame:
                     y = self.holder_height + (index // 4) * 35
                 else:
                     x = self.holder_width + (index % 4 * 40)
-                    y = self.holder_height + (index // 4) * 35 + 200  # Adjust y position for the second player's hand
+                    y = self.holder_height + (index // 4) * 35 + 200 
                 self.screen.blit(piece.sprite, (x, y))
+
 
     def draw_possible_deploy_locations(self):
         if self.selected_piece[0]:
