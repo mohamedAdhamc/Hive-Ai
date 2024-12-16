@@ -278,7 +278,14 @@ class HiveGame:
             HEX_WIDTH, HEX_HEIGHT, VERTICAL_SPACING, HORIZONTAL_SPACING = calculate_hex_dimensions(
                 HEX_RADIUS
             )
-
+            
+            player_color = "White" if self.current_player == 0 else "Black"
+            turn_text = f"Current Turn: {player_color}"
+            font = pygame.font.SysFont(None, 36)
+            text_surface = font.render(turn_text, True, (0, 0, 0))
+            text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, 20))  # 20 pixels from the top
+            self.screen.blit(text_surface, text_rect)
+            
             # Redraw grid with new offset
             #self.hexagons = draw_hex_grid(
             #    HEX_GRID, HEX_GRID, HEX_RADIUS, self.offset_x, self.offset_y
