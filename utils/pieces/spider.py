@@ -35,10 +35,9 @@ class Spider(GameObject):
         if(not board.checkIfvalid(initial_loc, None)):
             return []
         
+
+
         def moveStepForward(loc: Location , prevLoc: Location, step, prev_siblings):
-
-
-        def moveStepForward(loc: Location , prevLoc: Location, step):
             if(board.isNarrowPath(prevLoc, loc)):
                 return False
             flag = False
