@@ -63,6 +63,7 @@ class HiveGame:
         self.offset_y = 0
         self.selected_piece = [None, None]
         self.hands = []
+        self.won = None
 
         self.players = players
         self.players_modes = players_modes
@@ -98,10 +99,10 @@ class HiveGame:
         pygame.display.set_caption("Hive Game")
 
     def win_callback(self, team):
-        self.running = False
-        won = "WHITE" if team == 0 else "BLACK"
-
-        self.create_alert_window(f"{won} team won", 'Close')
+        # self.running = False
+        self.won = "WHITE" if team == 0 else "BLACK"
+        
+        # self.create_alert_window(f"{won} team won", 'Close')
 
     def check_game_events(self):
         global HEX_RADIUS, HEX_WIDTH, HEX_HEIGHT, VERTICAL_SPACING, HORIZONTAL_SPACING
@@ -189,10 +190,15 @@ class HiveGame:
             self.screen.blit(self.background_image, (0, 0))
             self.draw_hand()
 
-            if self.players[self.current_player] == PLAYER_TYPE_HUMAN:
-                self.check_game_events()
+            if not self.won:
+                if self.players[self.current_player] == PLAYER_TYPE_HUMAN:
+                    self.check_game_events()
+                else:
+                    self.prompt_ai_for_play()
             else:
-                self.prompt_ai_for_play()
+                for event in pygame.event.get():
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        self.running = False
 
             self.draw_possible_deploy_locations()
 
@@ -243,6 +249,13 @@ class HiveGame:
             text_surface = font.render(turn_text, True, (0, 0, 0))
             text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, 20))  # 20 pixels from the top
             self.screen.blit(text_surface, text_rect)
+
+            if self.won:
+                turn_text = f"{self.won} team won"
+                font = pygame.font.SysFont(None, 36)
+                text_surface = font.render(turn_text, True, (0, 0, 0))
+                text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, 60))  # 20 pixels from the top
+                self.screen.blit(text_surface, text_rect)
 
             pygame.display.flip()
 
