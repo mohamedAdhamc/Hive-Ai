@@ -1,6 +1,7 @@
 import pygame
 import copy
 import time
+import os
 
 from .hex_utils import (
     calculate_hex_dimensions,
@@ -90,6 +91,9 @@ class HiveGame:
         if self.players[1] != PLAYER_TYPE_HUMAN:
             self.tree[1] = StateTree(self.board, 1)
             self.tree[1].build_tree(self.tree[1]._root)
+
+        self.background_image = pygame.image.load(os.path.join("assets", "background_game.png"))
+        self.background_image = pygame.transform.scale(self.background_image, (WIDTH, HEIGHT))
 
         pygame.display.set_caption("Hive Game")
 
@@ -181,12 +185,15 @@ class HiveGame:
 
         self.running = True
         while self.running:
-            self.screen.fill(BACKGROUND)
-            self.draw_possible_deploy_locations()
+            self.screen.blit(self.background_image, (0, 0))
             self.draw_hand()
 
+            if self.players[self.current_player] == PLAYER_TYPE_HUMAN:
+                self.check_game_events()
+            else:
+                self.prompt_ai_for_play()
 
-            
+            self.draw_possible_deploy_locations()
 
             for piece in self.board._objects.values():
                 x, y = piece._location.get_x(), piece._location.get_y()
@@ -215,19 +222,13 @@ class HiveGame:
                     hexagon_vertices(CENTER_X + correct_x, CENTER_Y + correct_y, HEX_RADIUS), 3
                 )
                 self.screen.blit(piece.sprite, (CENTER_X + correct_x - p_width / 2, CENTER_Y + correct_y - p_height / 2))
-            
+
             if self.piece_to_be_moved: # highlight the piece that is selected
                 pygame.draw.polygon(
                     self.screen, RED,
                     hexagon_vertices(CENTER_X + self.piece_to_be_moved._location.get_x() * HORIZONTAL_SPACING / 2, CENTER_Y + self.piece_to_be_moved._location.get_y() * VERTICAL_SPACING, HEX_RADIUS), 3
                 )
                 # self.piece_to_be_moved = None
-
-
-            if self.players[self.current_player] == PLAYER_TYPE_HUMAN:
-                self.check_game_events()
-            else:
-                self.prompt_ai_for_play()
 
             self._draw_hex_from_list(CYAN_COLOR, self.next_possible_locations)
 
@@ -354,7 +355,7 @@ class HiveGame:
         if(possible_new_place_flag == False and not piece_flag):
             self.next_possible_locations.clear()
             self.piece_to_be_moved = None
-        
+
         if(possible_new_place_flag == False and not piece_flag and not selection_flag):
             self.selected_piece = [None, None]
             self.possible_deploy_locations.clear()
@@ -375,7 +376,7 @@ class HiveGame:
         if(hand_selection_flag):
            self.next_possible_locations = []
            self.piece_to_be_moved = None
-           
+
         return hand_selection_flag
 
     def _draw_hex_from_list(self, color, hex_list):
