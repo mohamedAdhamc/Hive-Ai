@@ -111,7 +111,7 @@ class Board:
         }
      
 
-    def add_object(self, game_object: GameObject):
+    def add_object(self, game_object: GameObject, ai = False):
         """
         Add a game object to the board. Validates placement rules before committing changes.
         Ensures that:
@@ -135,7 +135,7 @@ class Board:
             self._hands[game_object.get_team()][game_object.__class__] -= 1
             self._turn_number += 1
 
-            if self._turn_number > 7:
+            if self._turn_number > 7 and not ai:
                 self.check_win_condition()
                 
             # print("Board state: ", self._objects)
@@ -218,7 +218,7 @@ class Board:
         self._hands[game_object.get_team()][game_object.__class__] += 1 # increase chosen object by one
         del self._objects[(location)]
 
-    def move_object(self, oldLocation, newLocation):
+    def move_object(self, oldLocation, newLocation, ai = False):
         """
         Move a game object from one position to another.
 
@@ -242,7 +242,7 @@ class Board:
         self._objects[(newLocation)] = object
 
         self._turn_number += 1
-        if self._turn_number > 7:
+        if self._turn_number > 7 and not ai:
             self.check_win_condition()
         
         # print(object.__class__.__name__," was moved to ", newLocation)

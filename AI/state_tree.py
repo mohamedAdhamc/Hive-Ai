@@ -130,9 +130,9 @@ class StateTree:
                 piece = Grasshopper(Location(destination_x, destination_y), team)
             elif source == "Spider":
                 piece = Spider(Location(destination_x, destination_y), team)
-            Board.add_object(self._board_state, piece)
+            Board.add_object(self._board_state, piece, True)
         else:
-            Board.move_object(self._board_state, Location(source.get_x(), source.get_y()), Location(destination_x, destination_y))
+            Board.move_object(self._board_state, Location(source.get_x(), source.get_y()), Location(destination_x, destination_y), True)
 
     def reverse_move(self, move):
         destination, source = move
@@ -141,7 +141,7 @@ class StateTree:
             Board.remove_object(self._board_state, Location(source.get_x(), source.get_y()))
         else:
             self._board_state._turn_number -= 1
-            Board.move_object(self._board_state, Location(source.get_x(), source.get_y()), Location(destination.get_x(), destination.get_y()))
+            Board.move_object(self._board_state, Location(source.get_x(), source.get_y()), Location(destination.get_x(), destination.get_y()), True)
 
     def find_distance_to_queen(self, piece_location, queen_location):
         place_values = [20, 12, 5, 2, 1, 0]
