@@ -56,11 +56,11 @@ def iterative_depening(max_time, max_min, tree):
     result = None
     depth= 1
     while(True):
+        result = apply_alphabeta(depth, max_min, tree._root)
         if (time.time() - start_time) >= max_time:
             break
-        result = apply_alphabeta(depth, max_min, tree._root)
         depth = depth + 1
-        tree.add_level(tree._root)
+        tree.add_level(tree._root, 1)
         tree._depth = depth
     print("last level reached by iterative deepening: ", depth)
     return result

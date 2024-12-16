@@ -19,6 +19,25 @@ class Board:
         self._hands = {}
         self.initiate_game()
 
+    def get_board_representation(self):
+        
+        board_representation = [None] * 23
+        pointers = {
+            "Queen": [0, 11],
+            "Ant": [1, 12],
+            "Grasshopper": [4, 15],
+            "Beetle": [7, 18],
+            "Spider": [9, 20]
+        }
+
+        for location, piece in self._objects.items():
+            pointer = pointers[piece.__class__.__name__][piece._team]
+            board_representation[pointer] = location
+            pointers[piece.__class__.__name__][piece._team] += 1
+
+        board_representation[22] = self._turn_number % 2
+        return board_representation
+
     def turn(self):
         """
         Determines whose turn it is to play.
@@ -51,25 +70,25 @@ class Board:
         deploy_locations = self.getPossibleDeployLocations(team_number)
         flag=1
 
-        if (self._turn_number == 7 and team_number == 0) or (self._turn_number == 8 and team_number == 1):
+        if (self._turn_number == 6 and team_number == 0) or (self._turn_number == 7 and team_number == 1):
             if available_pieces.get(Queen, 0) > 0:  # If Queen is still in hand
                 flag=0
                 for location in deploy_locations:
                     combined_results.append(('Queen', location))
         
         if(flag):
+            team_pieces = self.filter_team_pieces()
+
+            for location, piece in team_pieces.items():
+                possible_destinations = piece.get_next_possible_locations(self)
+
+                for destination in possible_destinations:
+                    combined_results.append((location, destination))
+
             for piece_type, count in available_pieces.items():
                 if count > 0:
                     for location in deploy_locations:
                         combined_results.append((piece_type.__name__, location))
-
-        team_pieces = self.filter_team_pieces()
-
-        for location, piece in team_pieces.items():
-            possible_destinations = piece.get_next_possible_locations(self)
-
-            for destination in possible_destinations:
-                combined_results.append((location, destination))
 
         return combined_results
 
@@ -224,7 +243,7 @@ class Board:
         self._objects[(newLocation)] = object
 
         self._turn_number += 1
-        if self._turn_number > 4:
+        if self._turn_number > 7:
             self.check_win_condition()
         
         print("Board state:", self._objects)

@@ -55,7 +55,7 @@ def draw_hex_grid(rows, cols, hex_radius, offset_x=0, offset_y=0):
 
 
 class HiveGame:
-    def __init__(self, players):
+    def __init__(self, players, players_modes, players_diff):
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.hexagons = draw_hex_grid(HEX_GRID, HEX_GRID, HEX_RADIUS)
         self.offset_x = 0
@@ -64,6 +64,8 @@ class HiveGame:
         self.hands = []
 
         self.players = players
+        self.players_modes = players_modes
+        self.players_diff = players_diff
         self.current_player = 0
 
         # all rect structures are for click detection
@@ -75,17 +77,18 @@ class HiveGame:
         self.drawn_locations = []
 
         self.init_piece_holder()
+
         # create a board
         self.board = Board(self.win_callback, self.create_alert_window)
 
         self.human_move = [(None, None), (None, None)]
-
         self.tree = [None, None]
+
         if self.players[0] != PLAYER_TYPE_HUMAN:
-            self.tree[0] = StateTree(self.board, 2)
+            self.tree[0] = StateTree(self.board, 1)
             self.tree[0].build_tree(self.tree[0]._root)
         if self.players[1] != PLAYER_TYPE_HUMAN:
-            self.tree[1] = StateTree(self.board, 2)
+            self.tree[1] = StateTree(self.board, 1)
             self.tree[1].build_tree(self.tree[1]._root)
 
         pygame.display.set_caption("Hive Game")
@@ -128,6 +131,7 @@ class HiveGame:
 
     def prompt_ai_for_play(self):
         start_time = time.time()
+        skip = False
         for child_node in self.tree[self.current_player]._root.children:
             try:
                 if child_node.move == self.human_move[self.current_player - 1]:
@@ -136,19 +140,30 @@ class HiveGame:
                     break
             except Exception:
                 pass
+        else:
+            build_start_time = time.time()
+            self.tree[self.current_player] = StateTree(self.board, 2)
+            self.tree[self.current_player].build_tree(self.tree[self.current_player]._root)
+            skip = True
+        # self.tree[self.current_player]._root.print_tree()
+        
         self.tree[self.current_player]._board_state._objects = copy.deepcopy(self.board._objects)
-        build_start_time = time.time()
-        self.tree[self.current_player]._leaves_count = 0
-        self.tree[self.current_player]._depth += 2
-        self.tree[self.current_player].add_level(self.tree[self.current_player]._root)
+        
+        if not skip:
+            build_start_time = time.time()
+            self.tree[self.current_player]._leaves_count = 0
+            self.tree[self.current_player]._depth += 2
+            self.tree[self.current_player].add_level(self.tree[self.current_player]._root)
+        
         print("leaves count: ", self.tree[self.current_player]._leaves_count)
         print("bulid time: ", time.time() - build_start_time)
-        # self.tree[self.current_player]._root.print_tree()
-        chosen_node = self.tree[self.current_player].get_best_move("min-max")
+        
+        chosen_node = self.tree[self.current_player].get_best_move(self.players_modes[self.current_player], self.players_diff[self.current_player], self.current_player == 0)
         self.tree[self.current_player]._root = chosen_node
         source, destination = chosen_node.move
         destination_x = destination.get_x()
         destination_y = destination.get_y()
+        
         if (isinstance(source, str)):
             team = 0 if (self.board._turn_number % 2 == 0) else 1
             if source == "Queen":
