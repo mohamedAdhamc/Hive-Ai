@@ -160,14 +160,24 @@ class HiveGame:
             team = 0 if (self.board._turn_number % 2 == 0) else 1
             if source == "Queen":
                 piece = Queen(Location(destination_x, destination_y), team)
+                queen_index = self.hands[team].index(Queen)
+                self.hands[team][queen_index] = None
             elif source == "Ant":
                 piece = Ant(Location(destination_x, destination_y), team)
+                ant_index = self.hands[team].index(Ant)
+                self.hands[team][ant_index] = None
             elif source == "Beetle":
                 piece = Beetle(Location(destination_x, destination_y), team)
+                beetle_index = self.hands[team].index(Beetle)
+                self.hands[team][beetle_index] = None
             elif source == "Grasshopper":
                 piece = Grasshopper(Location(destination_x, destination_y), team)
+                grasshopper_index = self.hands[team].index(Grasshopper)
+                self.hands[team][grasshopper_index] = None
             elif source == "Spider":
                 piece = Spider(Location(destination_x, destination_y), team)
+                spider_index = self.hands[team].index(Spider)
+                self.hands[team][spider_index] = None
             Board.add_object(self.board, piece)
         else:
             Board.move_object(self.board, Location(source.get_x(), source.get_y()), Location(destination_x, destination_y))
@@ -240,8 +250,7 @@ class HiveGame:
             pygame.display.flip()
 
     def init_piece_holder(self):
-        # two times one for yellow team one for black team and it has to
-        # done this way so it does net get takon as a shallow copy
+        # Initialize hands for both teams
         self.hands.append([
             Ant, Ant, Ant,
             Beetle, Beetle,
@@ -256,32 +265,52 @@ class HiveGame:
         ])
         self.piece_rects = []
 
-        # I got them by trial and error so don't ask me
+        # Initialize holder dimensions
         self.holder_width = WIDTH * 3/4 + 20
         self.holder_height = HEIGHT * 1/4 + 10
-        self.pieces_holder_border = pygame.rect.Rect((WIDTH * 3/4, HEIGHT * 1/4), (WIDTH * 1/4 + 5, 125))
-        self.pieces_holder = pygame.rect.Rect((WIDTH * 3/4 + 5, HEIGHT * 1/4 + 5), (WIDTH * 1/4, 125 - 10))
 
-        # one collision detection box work for both players
-        for index, piece in enumerate(self.hands[0]):
-            x = self.holder_width + (index % 4 * 40)
-            y = self.holder_height + (index // 4) * 35
-            self.piece_rects.append(piece.sprite.get_rect().move(x, y))
+        # Initialize rectangles for both players' hands
+        self.pieces_holder_border = [
+            pygame.rect.Rect((WIDTH * 3/4, HEIGHT * 1/4), (WIDTH * 1/4 + 5, 125)),
+            pygame.rect.Rect((WIDTH * 3/4, HEIGHT * 1/4 + 205), (WIDTH * 1/4 + 5, 125))
+        ]
+        self.pieces_holder = [
+            pygame.rect.Rect((WIDTH * 3/4 + 5, HEIGHT * 1/4 + 5), (WIDTH * 1/4, 125 - 10)),
+            pygame.rect.Rect((WIDTH * 3/4 + 5, HEIGHT * 1/4 + 210), (WIDTH * 1/4, 125 - 10))
+        ]
+
+        # Initialize piece rectangles for collision detection for both teams
+        for team in range(2):
+            for index, piece in enumerate(self.hands[team]):
+                if team == 0:
+                    x = self.holder_width + (index % 4 * 40)
+                    y = self.holder_height + (index // 4) * 35
+                else:
+                    x = self.holder_width + (index % 4 * 40)
+                    y = self.holder_height + (index // 4) * 35 + 205
+                piece_rect = piece.sprite.get_rect().move(x, y)
+                self.piece_rects.append(piece_rect)
 
 
     def draw_hand(self):
         weird_brown_color = (210, 189, 150)
-        pygame.draw.rect(self.screen, (10, 10, 10), self.pieces_holder_border, border_radius = 5)
-        pygame.draw.rect(self.screen, weird_brown_color, self.pieces_holder, border_radius = 5)
+        
+        for i in range(2):
+            pygame.draw.rect(self.screen, (10, 10, 10), self.pieces_holder_border[i], border_radius=5)
+            pygame.draw.rect(self.screen, weird_brown_color, self.pieces_holder[i], border_radius=5)
 
-        team = self.board._turn_number % 2
-        for index, piece in enumerate(self.hands[team]):
-            if not piece:
-                continue
 
-            x = self.holder_width + (index % 4 * 40)
-            y = self.holder_height + (index // 4) * 35
-            self.screen.blit(piece.sprite, (x, y))
+        for team in range(2):
+            for index, piece in enumerate(self.hands[team]):
+                if not piece:
+                    continue
+                if team == 0:
+                    x = self.holder_width + (index % 4 * 40)
+                    y = self.holder_height + (index // 4) * 35
+                else:
+                    x = self.holder_width + (index % 4 * 40)
+                    y = self.holder_height + (index // 4) * 35 + 200  # Adjust y position for the second player's hand
+                self.screen.blit(piece.sprite, (x, y))
 
     def draw_possible_deploy_locations(self):
         if self.selected_piece[0]:
@@ -351,19 +380,20 @@ class HiveGame:
     def check_piece_hand_selection(self, mouse_pos):
         team = self.board._turn_number % 2
         hand_selection_flag = False
-        for index, (piece_rect, piece) in enumerate(zip(self.piece_rects, self.hands[team])):
+
+        for index, piece in enumerate(self.hands[team]):
             if not piece:
                 continue
-
+            piece_rect = self.piece_rects[team * 11 + index]
             if piece_rect.collidepoint(mouse_pos):
                 hand_selection_flag = True
                 self.possible_deploy_locations = self.board.getPossibleDeployLocations(team)
                 self.selected_piece = [piece, index]
+                break
 
-        if(hand_selection_flag):
-           self.next_possible_locations = []
-           self.piece_to_be_moved = None
-
+        if hand_selection_flag:
+            self.next_possible_locations = []
+            self.piece_to_be_moved = None         
         return hand_selection_flag
 
     def _draw_hex_from_list(self, color, hex_list):
