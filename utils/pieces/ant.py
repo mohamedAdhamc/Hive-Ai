@@ -52,7 +52,12 @@ class Ant(GameObject):
         # these have to be checked yet
 
         possible_moves: set[Location] = set()
-        x, y = self._location.get_x(), self._location.get_y()
+        loc: Location = self.get_location()
+        x, y = loc.get_x(), loc.get_y()
+        
+        # check if object can leave its initial position
+        if(not board.checkIfvalid(loc, None)):
+            return []
 
         full_trap = self._check_surrounding(board)
         if full_trap or self._check_trapped(board):
@@ -71,7 +76,7 @@ class Ant(GameObject):
                 neighbour = board.get_object(new_location)
                 if not neighbour:
                     if(not board.isNarrowPath(self.get_location(),new_location)):
-                        if board.check_if_hive_valid(self._location, new_location):
+                        if board.checkIfvalid(self._location, new_location):
                             possible_moves.add(new_location)
                 else:
                     surrounding.append(neighbour)
